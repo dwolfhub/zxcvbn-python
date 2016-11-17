@@ -75,11 +75,12 @@ def omnimatch(password):
     matches = (dictionary_match, reverse_dictionary_match,)  # TODO
 
 
-def dictionary_match(password, ranked_dictionaries=RANKED_DICTIONARIES):
+def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     pass  # TODO
 
 
-def reverse_dictionary_match(password, ranked_dictionaries=RANKED_DICTIONARIES):
+def reverse_dictionary_match(password,
+                             _ranked_dictionaries=RANKED_DICTIONARIES):
     pass  # TODO
 
 
@@ -89,8 +90,8 @@ def set_user_input_dictionary(ordered_list):
 
 def relevant_l33t_subtable(password, table):
     password_chars = {}
-    for chr in password.split():
-        password_chars[chr] = True
+    for char in password.split():
+        password_chars[char] = True
 
     subtable = {}
     for letter, subs in table:
@@ -101,5 +102,94 @@ def relevant_l33t_subtable(password, table):
     return subtable
 
 
+def __dedup(subs):
+    # TODO
+    return subs
+
+
+def __helper(table, keys, subs):
+    if not len(keys):
+        return
+
+    first_key = keys[0]
+    rest_keys = keys[1:]
+    next_subs = []
+    for l33t_chr in table[first_key]:
+        for sub in subs:
+            dup_l33t_index = -1
+            for i in range(len(sub)):
+                if sub[i][0] == l33t_chr:
+                    dup_l33t_index = i
+                    break
+            if dup_l33t_index == -1:
+                sub_extension = l33t_chr + first_key
+                next_subs.append(sub_extension)
+            else:
+                sub_alternative = sub
+                sub_alternative.pop(dup_l33t_index)
+                sub_alternative.append([l33t_chr, first_key])
+                next_subs.append(sub)
+                next_subs.append(sub_alternative)
+    subs = __dedup(next_subs)
+    __helper(rest_keys)
+    # TODO this needs to return something or make sure original var is changeds
+
+
 def enumerate_l33t_subs(table):
-    
+    keys = table.keys()
+    subs = [[]]
+
+    __helper(table, keys, subs)
+
+    sub_dicts = []
+    for sub in subs:
+        sub_dict = {}
+        for l33t_chr, chr in sub:
+            sub_dict[l33t_chr] = chr
+        sub_dicts.append()
+    return sub_dicts
+
+
+def __translate(string, chr_map):
+    chars = []
+    for char in string.split():
+        if chr_map[char]:
+            chars.append(chr_map[char])
+        else:
+            chars.append(char)
+
+    return ''.join(chars)
+
+
+def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
+               _l33t_table=L33T_TABLE):
+    matches = []
+
+    for sub in enumerate_l33t_subs(
+            relevant_l33t_subtable(password, _l33t_table)):
+        if not bool(sub):
+            break
+
+        subbed_password = __translate(password, sub)
+        for match in dictionary_match(subbed_password, _ranked_dictionaries):
+            token = password[match['i']:match['j']]
+            if token.lower() == match['matched_word']:
+                # only return the matches that contain an actual substitution
+                continue
+
+            # subset of mappings in sub that are in use for this match
+            match_sub = {}
+            for subbed_chr, chr in sub:
+                if token in subbed_chr:
+                    match_sub[subbed_chr] = chr
+            match['l33t'] = True
+            match['token'] = token
+            match['sub'] = match_sub
+            match['sub_display'] = ', '.join(
+                ["%s -> %s" % (k, v) for k, v in match_sub]
+            )
+            matches.append(match)
+
+    matches = [match for match in matches if len(match['token']) > 1]
+
+    return matches.sort()
