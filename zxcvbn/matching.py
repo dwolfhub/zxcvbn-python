@@ -1,5 +1,8 @@
 from zxcvbn import adjacency_graphs
 from zxcvbn.frequency_lists import FREQUENCY_LISTS
+import re
+
+from zxcvbn.scoring import most_guessable_match_sequence
 
 
 def build_ranked_dict(ordered_list):
@@ -39,7 +42,7 @@ L33T_TABLE = {
 }
 
 REGEXEN = {
-    'recent_year': '/19\d\d|200\d|201\d/g'
+    'recent_year': re.compile('/19\d\d|200\d|201\d/g')
 }
 
 DATE_MAX_YEAR = 2050
@@ -69,6 +72,8 @@ DATE_SPLITS = {
         [4, 6],  # 1991 11 11
     ],
 }
+
+SHIFTED_RX = re.compile('/[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]/')
 
 
 def omnimatch(password):
@@ -191,5 +196,108 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
             matches.append(match)
 
     matches = [match for match in matches if len(match['token']) > 1]
+
+    return matches.sort()
+
+
+def spacial_match_helper(password, graph, graph_name):
+    matches = []
+    i = 0
+    password_len = len(password)
+    while i < password_len - 1:
+        j = i + 1
+        last_direction = None
+        turns = 0
+        if graph_name in ['qwerty', 'dvorak', ] and \
+                SHIFTED_RX.match(password[i]):
+            shifted_count = 1
+        else:
+            shifted_count = 0
+
+        while True:
+            prev_char = password[j - 1]
+            found = False
+            found_direction = -1
+            cur_direction = -1
+            adjacents = graph[prev_char] or []
+            if j < password_len:
+                cur_char = password[j]
+                for adj in adjacents:
+                    cur_direction += 1
+                    if adj and cur_char in adj:
+                        found = True
+                        found_direction = cur_direction
+                        if adj.index(cur_char) == 1:
+                            shifted_count += 1
+                        if last_direction != found_direction:
+                            turns += 1
+                            last_direction = found_direction
+                        break
+            if found:
+                j += 1
+            else:
+                if j - i > 2:
+                    matches.append({
+                        'pattern': 'spatial',
+                        'i': i,
+                        'j': j - 1,
+                        'token': password[i:j],
+                        'turns': turns,
+                        'shifted_count': shifted_count,
+                    })
+                i = j
+                break
+
+    return matches
+
+
+def repeat_match(password):
+    matches = []
+    greedy = re.compile(r'(.+)\1+')
+    lazy = re.compile(r'(.+?)\1+')
+    lazy_anchored = re.compile(r'^(.+?)\1+$')
+    last_index = 0
+    while last_index < len(password):
+        # greedy.last_index = lazy.last_index = last_index
+        greedy_match = [
+            (match.start(), match.end(), match.group(0), match.group(1))
+            for match in greedy.finditer(password)
+            ]
+        lazy_match = [
+            (match.start(), match.end(), match.group(0), match.group(1))
+            for match in lazy.finditer(password)
+            ]
+
+        if not greedy_match:
+            break
+
+        if len(greedy_match[0][2]) > len(lazy_match[0][2]):
+            # greedy beats lazy for 'aabaab'
+            #   greedy: [aabaab, aab]
+            #   lazy:   [aa,     a]
+            match = greedy_match
+            # greedy's repeated string might itself be repeated, eg.
+            # aabaab in aabaabaabaab.
+            # run an anchored lazy match on greedy's repeated string
+            # to find the shortest repeated string
+            base_token = lazy_anchored.finditer(match[0][2])[1]
+        else:
+            match = lazy_match
+            base_token = match[0][3]
+
+        i, j = match[0][0], match[0][1]
+        base_analysis = most_guessable_match_sequence(
+            base_token,
+            omnimatch(base_token)
+        )
+        last_index = j + 1
+
+    return matches
+
+
+def spacial_match(password, _graphs=GRAPHS):
+    matches = []
+    for graph_name, graph in _graphs:
+        matches.append(spacial_match_helper(password, graph, graph_name))
 
     return matches.sort()
