@@ -5,8 +5,7 @@ import pytest
 from zxcvbn.matching import repeat_match
 
 
-class RepeatMatchTest(TestCase):
-    @pytest.mark.skip(reason="not ready to be tested")
-    def test_returns_match(self):
-        assert repeat_match('repeatrepeat')
-        assert repeat_match('yesyes123')
+@pytest.mark.skip(reason="not ready to be tested")
+def test_returns_match():
+    assert repeat_match('repeatrepeat')
+    assert repeat_match('yesyes123')

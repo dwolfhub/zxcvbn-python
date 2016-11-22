@@ -1,5 +1,6 @@
 import pytest
 
+from zxcvbn import matching
 from zxcvbn import scoring
 from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
 
@@ -31,6 +32,7 @@ def test_nCk():
     ), "pascal's triangle identity"
 
 
+@pytest.mark.skip('not ready yet')
 def test_most_guessable_match_sequence():
     def m(i, j, guesses):
         return {
@@ -47,10 +49,10 @@ def test_most_guessable_match_sequence():
     assert len(result['sequence']) == 1, msg % "len(result) == 1"
     m0 = result['sequence'][0]
     assert m0['pattern'] == 'bruteforce', \
-        msg % "match['pattern']== 'bruteforce'"
-    assert m0['token'] == password, msg % ("match['token']== %s" % password)
+        msg % "match['pattern'] == 'bruteforce'"
+    assert m0['token'] == password, msg % ("match['token'] == %s" % password)
     assert [m0['i'], m0['j']] == [0, 9], msg % (
-        "[i, j] == [%s, %s]" % (m0['i'], m0['j'])
+        "i, j == %s, %s" % (m0['i'], m0['j'])
     )
 
     msg = "returns match + bruteforce when match " \
@@ -173,3 +175,157 @@ def test_date_guesses():
     msg = "recent years assume MIN_YEAR_SPACE. " \
           "extra guesses are added for separators."
     assert scoring.date_guesses(match) == 365 * scoring.MIN_YEAR_SPACE * 4, msg
+
+
+def test_spatial_guesses():
+    match = {
+        'token': 'zxcvbn',
+        'graph': 'qwerty',
+        'turns': 1,
+        'shifted_count': 0,
+    }
+    base_guesses = (
+        scoring.KEYBOARD_STARTING_POSITIONS *
+        scoring.KEYBOARD_AVERAGE_DEGREE *
+        # - 1 term because: not counting spatial patterns of length 1
+        # eg for length==6, multiplier is 5 for needing to try len2,len3,..,len6
+        (len(match['token']) - 1)
+    )
+    msg = "with no turns or shifts, guesses is starts * degree * (len-1)"
+    assert scoring.spatial_guesses(match) == base_guesses, msg
+
+    match['guesses'] = None
+    match['token'] = 'ZxCvbn'
+    match['shifted_count'] = 2
+    shifted_guesses = base_guesses * (scoring.nCk(6, 2) + scoring.nCk(6, 1))
+    msg = "guesses is added for shifted keys, similar to capitals in " \
+          "dictionary matching"
+    assert scoring.spatial_guesses(match) == shifted_guesses, msg
+
+    match['guesses'] = None
+    match['token'] = 'ZXCVBN'
+    match['shifted_count'] = 6
+    shifted_guesses = base_guesses * 2
+    msg = "when everything is shifted, guesses are doubled"
+    assert scoring.spatial_guesses(match) == shifted_guesses, msg
+
+    match = {
+        'token': 'zxcft6yh',
+        'graph': 'qwerty',
+        'turns': 3,
+        'shifted_count': 0,
+    }
+    guesses = 0
+    L = len(match['token'])
+    s = scoring.KEYBOARD_STARTING_POSITIONS
+    d = scoring.KEYBOARD_AVERAGE_DEGREE
+    for i in range(2, L + 1):
+        for j in range(1, min(match['turns'], i - 1) + 1):
+            guesses += scoring.nCk(i - 1, j - 1) * s * pow(d, j)
+
+    msg = "spatial guesses accounts for turn positions, directions and " \
+          "starting keys"
+    assert scoring.spatial_guesses(match) == guesses, msg
+
+
+def test_dictionary_guesses():
+    match = {
+        'token': 'aaaaa',
+        'rank': 32,
+    }
+    msg = "base guesses == the rank"
+    assert scoring.dictionary_guesses(match) == 32, msg
+
+    match = {
+        'token': 'AAAaaa',
+        'rank': 32
+    }
+    msg = "extra guesses are added for capitalization"
+    assert scoring.dictionary_guesses(
+        match) == 32 * scoring.uppercase_variations(match), msg
+
+    match = {
+        'token': 'aaa',
+        'rank': 32,
+        'reversed': True
+    }
+    msg = "guesses are doubled when word is reversed"
+    assert scoring.dictionary_guesses(match) == 32 * 2, msg
+
+    match = {
+        'token': 'aaa@@@',
+        'rank': 32,
+        'l33t': True,
+        'sub': {'@': 'a'},
+    }
+    msg = "extra guesses are added for common l33t substitutions"
+    assert scoring.dictionary_guesses(match) == \
+           32 * scoring.l33t_variations(match), msg
+
+    match = {
+        'token': 'AaA@@@',
+        'rank': 32,
+        'l33t': True,
+        'sub': {'@': 'a'},
+    }
+    msg = "extra guesses are added for both capitalization and common l33t " \
+          "substitutions"
+    expected = 32 * scoring.l33t_variations(match) * \
+               scoring.uppercase_variations(match)
+    assert scoring.dictionary_guesses(match) == expected, msg
+
+
+def test_uppercase_variants():
+    for [word, variants] in [
+        ['', 1],
+        ['a', 1],
+        ['A', 2],
+        ['abcdef', 1],
+        ['Abcdef', 2],
+        ['abcdeF', 2],
+        ['ABCDEF', 2],
+        ['aBcdef', scoring.nCk(6, 1)],
+        ['aBcDef', scoring.nCk(6, 1) + scoring.nCk(6, 2)],
+        ['ABCDEf', scoring.nCk(6, 1)],
+        ['aBCDEf', scoring.nCk(6, 1) + scoring.nCk(6, 2)],
+        ['ABCdef', scoring.nCk(6, 1) + scoring.nCk(6, 2) + scoring.nCk(6, 3)],
+    ]:
+        msg = "guess multiplier of #{word} is #{variants}"
+        assert scoring.uppercase_variations({'token': word}) == variants, msg
+
+
+def test_l33t_variations():
+    match = {
+        'l33t': False
+    }
+    assert scoring.l33t_variations(match) == 1, "1 variant for non-l33t matches"
+    for [word, variants, sub] in [
+        ['', 1, {}],
+        ['a', 1, {}],
+        ['4', 2, {'4': 'a'}],
+        ['4pple', 2, {'4': 'a'}],
+        ['abcet', 1, {}],
+        ['4bcet', 2, {'4': 'a'}],
+        ['a8cet', 2, {'8': 'b'}],
+        ['abce+', 2, {'+': 't'}],
+        ['48cet', 4, {'4': 'a', '8': 'b'}],
+        ['a4a4aa', scoring.nCk(6, 2) + scoring.nCk(6, 1), {'4': 'a'}],
+        ['4a4a44', scoring.nCk(6, 2) + scoring.nCk(6, 1), {'4': 'a'}],
+        ['a44att+', (scoring.nCk(4, 2) + scoring.nCk(4, 1)) *
+                scoring.nCk(3, 1), {'4': 'a', '+': 't'}],
+    ]:
+        match = {
+            'token': word,
+            'sub': sub,
+            'l33t': len(sub) > 0
+        }
+        msg = "extra l33t guesses of #{word} is #{variants}"
+        assert scoring.l33t_variations(match) == variants, msg
+    match = {
+        'token': 'Aa44aA',
+        'l33t': True,
+        'sub': {'4': 'a'},
+    }
+    variants = scoring.nCk(6, 2) + scoring.nCk(6, 1)
+    msg = "capitalization doesn't affect extra l33t guesses calc"
+    assert scoring.l33t_variations(match) == variants, msg

@@ -2,6 +2,10 @@ import operator
 
 from math import log, factorial, inf
 
+import re
+
+from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
+
 
 def calc_average_degree(graph):
     average = 0
@@ -61,11 +65,6 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
      - an attacker would also likely try length-1 (dictionary) and length-2
        (dictionary-date) sequences before length-3. assuming at minimum D
        guesses per pattern type, D^(l-1) approximates Sum(D^i for i in [1..l-1]
-
-    :param password:
-    :param matches:
-    :param _exclude_additive:
-    :return:
     """
     n = len(password)
 
@@ -78,11 +77,25 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         lst.sort(key=operator.attrgetter('i'))
 
     optimal = {
+        # optimal.m[k][l] holds final match in the best length-l match sequence
+        # covering the password prefix up to k, inclusive.
+        # if there is no length-l sequence that scores better (fewer guesses)
+        # than a shorter match sequence spanning the same prefix,
+        # optimal.m[k][l] is undefined.
         'm': [{}] * n,
+
+        # same structure as optimal.m -- holds the product term Prod(m.guesses
+        # for m in sequence). optimal.pi allows for fast (non-looping) updates
+        # to the minimization function.
         'pi': [{}] * n,
+
+        # same structure as optimal.m -- holds the overall metric.
         'g': [{}] * n,
     }
 
+    # helper: considers whether a length-l sequence ending at match m is better
+    # (fewer guesses) than previously encountered sequences, updating state if
+    # so.
     def update(m, l):
         k = m['j']
         pi = estimate_guesses(m, password)
@@ -91,7 +104,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
             # obtain the product term in the minimization function by
             # multiplying m's guesses by the product of the length-(l-1)
             # sequence ending just before m, at m.i - 1.
-            pi *= optimal['pie'][m['i'] - 1][l - 1]
+            pi *= optimal['pi'][m['i'] - 1][l - 1]
         # calculate the minimization func
         g = factorial(l) * pi
         if not _exclude_additive:
@@ -101,29 +114,42 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         # first see if any competing sequences covering this prefix, with l or
         # fewer matches, fare better than this sequence. if so, skip it and
         # return.
-        for completing_l, competing_g in enumerate(optimal['g'][k]):
+        for completing_l, competing_g in optimal['g'][k].items():
             if completing_l > l:
                 continue
             if competing_g <= g:
                 return
 
+        # this sequence might be part of the final optimal sequence.
         optimal['g'][k][l] = g
         optimal['m'][k][l] = m
         optimal['pi'][k][l] = pi
 
+    # helper: evaluate bruteforce matches ending at k.
     def bruteforce_update(k):
+        # see if a single bruteforce match spanning the k-prefix is optimal.
         m = make_bruteforce_match(0, k)
         update(m, 1)
         for i in range(1, k):
+            # generate k bruteforce matches, spanning from (i=1, j=k) up to
+            # (i=k, j=k). see if adding these new matches to any of the
+            # sequences in optimal[i-1] leads to new bests.
             m = make_bruteforce_match(i, k)
             for l, last_m in optimal['m'][i - 1].items():
                 l = int(l)
 
+                # corner: an optimal sequence will never have two adjacent
+                # bruteforce matches. it is strictly better to have a single
+                # bruteforce match spanning the same region: same contribution
+                # to the guess product with a lower length.
+                # --> safe to skip those cases.
                 if last_m['pattern'] == 'bruteforce':
                     continue
 
+                # try adding m to this length-l sequence.
                 update(m, l + 1)
 
+    # helper: make bruteforce match objects spanning i to j, inclusive.
     def make_bruteforce_match(i, j):
         return {
             'pattern': 'bruteforce',
@@ -132,16 +158,19 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
             'j': j,
         }
 
+    # helper: step backwards through optimal.m starting at the end,
+    # constructing the final optimal match sequence.
     def unwind(n):
         optimal_match_sequence = []
         k = n - 1
+        # find the final best sequence length and score
         l = None
         g = inf
-
         for candidate_l, candidate_g in optimal['g'][k].items():
             if candidate_g < g:
                 l = candidate_l
                 g = candidate_g
+
         while k >= 0:
             m = optimal['m'][k][l]
             optimal_match_sequence.insert(0, m)
@@ -159,14 +188,17 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
             else:
                 update(m, 1)
         bruteforce_update(k)
+
     optimal_match_sequence = unwind(n)
     optimal_l = len(optimal_match_sequence)
 
+    # corner: empty password
     if len(password) == 0:
         guesses = 1
     else:
         guesses = optimal['g'][n - 1][optimal_l]
 
+    # final result object
     return {
         'password': password,
         'guesses': guesses,
@@ -221,26 +253,22 @@ def dictionary_guesses(match):
     match['base_guesses'] = match['rank']
     match['uppercase_variations'] = uppercase_variations(match)
     match['l33t_variations'] = l33t_variations(match)
-    reversed_variations = match['reversed'] and 2 or 1
+    reversed_variations = match.get('reversed', False) and 2 or 1
 
     return match['base_guesses'] * match['uppercase_variations'] * \
            match['l33t_variations'] * reversed_variations
 
 
-def spatial_guesses(match):
-    pass
-
-
 def repeat_guesses(match):
-    pass
+    assert False
 
 
 def sequence_guesses(match):
-    pass
+    assert False
 
 
 def regex_guesses(match):
-    pass
+    assert False
 
 
 def date_guesses(match):
@@ -252,9 +280,97 @@ def date_guesses(match):
     return guesses
 
 
+KEYBOARD_AVERAGE_DEGREE = calc_average_degree(ADJACENCY_GRAPHS['qwerty'])
+# slightly different for keypad/mac keypad, but close enough
+KEYPAD_AVERAGE_DEGREE = calc_average_degree(ADJACENCY_GRAPHS['keypad'])
+
+KEYBOARD_STARTING_POSITIONS = len(ADJACENCY_GRAPHS['qwerty'].keys())
+KEYPAD_STARTING_POSITIONS = len(ADJACENCY_GRAPHS['keypad'].keys())
+
+
+def spatial_guesses(match):
+    if match['graph'] in ['qwerty', 'dvorak']:
+        s = KEYBOARD_STARTING_POSITIONS
+        d = KEYBOARD_AVERAGE_DEGREE
+    else:
+        s = KEYPAD_STARTING_POSITIONS
+        d = KEYPAD_AVERAGE_DEGREE
+    guesses = 0
+    L = len(match['token'])
+    t = match['turns']
+    # estimate the number of possible patterns w/ length L or less with t turns
+    # or less.
+    for i in range(2, L + 1):
+        possible_turns = min(t, i - 1) + 1
+        for j in range(1, possible_turns):
+            guesses += nCk(i - 1, j - 1) * s * pow(d, j)
+    # add extra guesses for shifted keys. (% instead of 5, A instead of a.)
+    # math is similar to extra guesses of l33t substitutions in dictionary
+    # matches.
+    if match['shifted_count']:
+        S = match['shifted_count']
+        U = len(match['token']) - match['shifted_count']  # unshifted count
+        if S == 0 or U == 0:
+            guesses *= 2
+        else:
+            shifted_variations = 0
+            for i in range(1, min(S, U) + 1):
+                shifted_variations += nCk(S + U, i)
+            guesses *= shifted_variations
+
+    return guesses
+
+
+START_UPPER = re.compile('^[A-Z][^A-Z]+$')
+END_UPPER = re.compile('^[^A-Z]+[A-Z]$')
+ALL_UPPER = re.compile('^[^a-z]+$')
+ALL_LOWER = re.compile('^[^A-Z]+$')
+
+
 def uppercase_variations(match):
-    pass
+    word = match['token']
+
+    if ALL_LOWER.match(word) or word.lower() == word:
+        return 1
+
+    for regex in [START_UPPER, END_UPPER, ALL_UPPER]:
+        if regex.match(word):
+            return 2
+
+    U = sum(1 for c in word if c.isupper())
+    L = sum(1 for c in word if c.islower())
+    variations = 0
+    for i in range(1, min(U, L) + 1):
+        variations += nCk(U + L, i)
+
+    return variations
 
 
 def l33t_variations(match):
-    pass
+    if not match.get('l33t', False):
+        return 1
+
+    variations = 1
+
+    for subbed, unsubbed in match['sub'].items():
+        # lower-case match.token before calculating: capitalization shouldn't
+        # affect l33t calc.
+        chrs = list(match['token'].lower())
+        S = sum(1 for chr in chrs if chr == subbed)
+        U = sum(1 for chr in chrs if chr == unsubbed)
+        if S == 0 or U == 0:
+            # for this sub, password is either fully subbed (444) or fully
+            # unsubbed (aaa) treat that as doubling the space (attacker needs
+            # to try fully subbed chars in addition to unsubbed.)
+            variations *= 2
+        else:
+            # this case is similar to capitalization:
+            # with aa44a, U = 3, S = 2, attacker needs to try unsubbed + one
+            # sub + two subs
+            p = min(U, S)
+            possibilities = 0
+            for i in range(1, p + 1):
+                possibilities += nCk(U + S, i)
+            variations *= possibilities
+
+    return variations
