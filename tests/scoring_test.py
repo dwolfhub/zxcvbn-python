@@ -33,7 +33,7 @@ def test_nCk():
 
 
 @pytest.mark.skip('not ready yet')
-def test_most_guessable_match_sequence():
+def test_search():
     def m(i, j, guesses):
         return {
             'i': i,
@@ -129,6 +129,100 @@ def test_most_guessable_match_sequence():
                                                    exclude_additive)
     assert result.guesses == 4, msg % "total guesses == 4"
     assert result.sequence == [m1, m2], msg % "sequence is [m1, m2]"
+
+
+def test_calc_guesses():
+    match = {
+        'guesses': 1,
+    }
+    msg = "estimate_guesses returns cached guesses when available"
+    assert scoring.estimate_guesses(match, '') == 1, msg
+
+    match = {
+        'pattern': 'date',
+        'token': '1977',
+        'year': 1977,
+        'month': 7,
+        'day': 14,
+    }
+    msg = 'estimate_guesses delegates based on pattern'
+    assert scoring.estimate_guesses(match, '1977') == \
+           scoring.date_guesses(match), msg
+
+
+@pytest.mark.skip('not ready to be tested')
+def test_repeat_guesses():
+    for [token, base_token, repeat_count] in [
+        ['aa', 'a', 2],
+        ['999', '9', 3],
+        ['$$$$', '$', 4],
+        ['abab', 'ab', 2],
+        ['batterystaplebatterystaplebatterystaple', 'batterystaple', 3]
+    ]:
+        base_guesses = scoring.most_guessable_match_sequence(
+            base_token,
+            matching.omnimatch(base_token)
+        )['guesses']
+        match = {
+            'token': token,
+            'base_token': base_token,
+            'base_guesses': base_guesses,
+            'repeat_count': repeat_count,
+        }
+        expected_guesses = base_guesses * repeat_count
+        msg = "the repeat pattern '#{token}' has guesses of #{expected_guesses}"
+        assert scoring.repeat_guesses(match) == expected_guesses, msg
+
+
+def test_sequence_guesses():
+    for [token, ascending, guesses] in [
+        ['ab', True, 4 * 2],  # obvious start * len-2
+        ['XYZ', True, 26 * 3],  # base26 * len-3
+        ['4567', True, 10 * 4],  # base10 * len-4
+        ['7654', False, 10 * 4 * 2],  # base10 * len 4 * descending
+        ['ZYX', False, 4 * 3 * 2],  # obvious start * len-3 * descending
+    ]:
+        match = {
+            'token': token,
+            'ascending': ascending,
+        }
+        msg = "the sequence pattern '#{token}' has guesses of #{guesses}"
+        assert scoring.sequence_guesses(match) == guesses, msg
+
+
+def test_regex_guesses():
+    match = {
+        'token': 'aizocdk',
+        'regex_name': 'alpha_lower',
+        'regex_match': ['aizocdk'],
+    }
+    msg = "guesses of 26^7 for 7-char lowercase regex"
+    assert scoring.regex_guesses(match) == 26 ** 7, msg
+
+    match = {
+        'token': 'ag7C8',
+        'regex_name': 'alphanumeric',
+        'regex_match': ['ag7C8'],
+    }
+    msg = "guesses of 62^5 for 5-char alphanumeric regex"
+    assert scoring.regex_guesses(match) == (2 * 26 + 10) ** 5, msg
+
+    match = {
+        'token': '1972',
+        'regex_name': 'recent_year',
+        'regex_match': ['1972'],
+    }
+    msg = "guesses of |year - REFERENCE_YEAR| for distant year matches"
+    assert scoring.regex_guesses(match) == abs(scoring.REFERENCE_YEAR - 1972), \
+        msg
+
+    match ={
+        'token': '2005',
+        'regex_name': 'recent_year',
+        'regex_match': ['2005'],
+    }
+    msg = "guesses of MIN_YEAR_SPACE for a year close to REFERENCE_YEAR"
+    assert scoring.regex_guesses(match) == scoring.MIN_YEAR_SPACE, msg
 
 
 def test_estimate_guesses():

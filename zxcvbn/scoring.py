@@ -264,11 +264,47 @@ def repeat_guesses(match):
 
 
 def sequence_guesses(match):
-    assert False
+    first_chr = match['token'][:1]
+    # lower guesses for obvious starting points
+    if first_chr in ['a', 'A', 'z', 'Z', '0', '1', '9']:
+        base_guesses = 4
+    else:
+        if re.compile('\d').match(first_chr):
+            base_guesses = 10  # digits
+        else:
+            # could give a higher base for uppercase,
+            # assigning 26 to both upper and lower sequences is more
+            # conservative.
+            base_guesses = 26
+    if not match['ascending']:
+        base_guesses *= 2
+
+    return base_guesses * len(match['token'])
+
+
+MIN_YEAR_SPACE = 20
+REFERENCE_YEAR = 2016
 
 
 def regex_guesses(match):
-    assert False
+    char_class_bases = {
+        'alpha_lower': 26,
+        'alpha_upper': 26,
+        'alpha': 52,
+        'alphanumeric': 62,
+        'digits': 10,
+        'symbols': 33,
+    }
+    if match['regex_name'] in char_class_bases:
+        return char_class_bases[match['regex_name']] ** len(match['token'])
+    elif match['regex_name'] == 'recent_year':
+        # conservative estimate of year space: num years from REFERENCE_YEAR.
+        # if year is close to REFERENCE_YEAR, estimate a year space of
+        # MIN_YEAR_SPACE.
+        year_space = abs(int(match['regex_match'][0]) - REFERENCE_YEAR)
+        year_space = max(year_space, MIN_YEAR_SPACE)
+
+        return year_space
 
 
 def date_guesses(match):
