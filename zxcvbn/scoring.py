@@ -2,7 +2,7 @@ from math import log, factorial, inf
 
 import re
 
-from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
+from .adjacency_graphs import ADJACENCY_GRAPHS
 
 
 def calc_average_degree(graph):
