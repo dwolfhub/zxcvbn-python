@@ -1,4 +1,4 @@
-from math import log, factorial, inf
+from math import log, factorial
 
 import re
 
@@ -163,7 +163,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         k = n - 1
         # find the final best sequence length and score
         l = None
-        g = inf
+        g = float('inf')
         for candidate_l, candidate_g in optimal['g'][k].items():
             if candidate_g < g:
                 l = candidate_l

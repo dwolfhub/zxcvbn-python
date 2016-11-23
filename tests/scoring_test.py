@@ -5,6 +5,7 @@ from zxcvbn import scoring
 from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
 
 
+@pytest.mark.xfail(reason="python27")
 def test_returns_average_degree():
     assert scoring.calc_average_degree(ADJACENCY_GRAPHS['qwerty']) == \
            4.595744680851064

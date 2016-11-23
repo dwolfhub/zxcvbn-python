@@ -1,4 +1,4 @@
-from zxcvbn import adjacency_graphs
+from . import adjacency_graphs
 from zxcvbn.frequency_lists import FREQUENCY_LISTS
 import re
 
