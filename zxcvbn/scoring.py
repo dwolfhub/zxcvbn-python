@@ -69,12 +69,12 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
     n = len(password)
 
     # partition matches into sublists according to ending index j
-    matches_by_j = [[]] * n
+    matches_by_j = [[] for _ in range(n)]
     for m in matches:
         matches_by_j[m['j']].append(m)
     # small detail: for deterministic output, sort each sublist by i.
     for lst in matches_by_j:
-        lst.sort(key=operator.attrgetter('i'))
+        lst.sort(key=lambda m1: m1['i'])
 
     optimal = {
         # optimal.m[k][l] holds final match in the best length-l match sequence
@@ -82,15 +82,15 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         # if there is no length-l sequence that scores better (fewer guesses)
         # than a shorter match sequence spanning the same prefix,
         # optimal.m[k][l] is undefined.
-        'm': [{}] * n,
+        'm': [{} for _ in range(n)],
 
         # same structure as optimal.m -- holds the product term Prod(m.guesses
         # for m in sequence). optimal.pi allows for fast (non-looping) updates
         # to the minimization function.
-        'pi': [{}] * n,
+        'pi': [{} for _ in range(n)],
 
         # same structure as optimal.m -- holds the overall metric.
-        'g': [{}] * n,
+        'g': [{} for _ in range(n)],
     }
 
     # helper: considers whether a length-l sequence ending at match m is better
@@ -108,7 +108,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         # calculate the minimization func
         g = factorial(l) * pi
         if not _exclude_additive:
-            g += pow(MIN_GUESSES_BEFORE_GROWING_SEQUENCE, l - 1)
+            g += MIN_GUESSES_BEFORE_GROWING_SEQUENCE ** (l - 1)
 
         # update state if new best.
         # first see if any competing sequences covering this prefix, with l or
@@ -143,7 +143,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
                 # bruteforce match spanning the same region: same contribution
                 # to the guess product with a lower length.
                 # --> safe to skip those cases.
-                if last_m['pattern'] == 'bruteforce':
+                if last_m.get('pattern', False) == 'bruteforce':
                     continue
 
                 # try adding m to this length-l sequence.
@@ -153,7 +153,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
     def make_bruteforce_match(i, j):
         return {
             'pattern': 'bruteforce',
-            'token': password[i:j],
+            'token': password[i:j + 1],
             'i': i,
             'j': j,
         }

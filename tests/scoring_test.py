@@ -32,7 +32,6 @@ def test_nCk():
     ), "pascal's triangle identity"
 
 
-@pytest.mark.skip('not ready yet')
 def test_search():
     def m(i, j, guesses):
         return {
@@ -42,6 +41,8 @@ def test_search():
         }
 
     password = '0123456789'
+
+    # for tests, set additive penalty to zero.
     exclude_additive = True
 
     msg = "returns one bruteforce match given an empty match sequence: %s"
@@ -61,13 +62,13 @@ def test_search():
     matches = [m0]
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
-    assert result.sequence.length == 2, \
-        msg % "result.match.sequence.length == 2"
-    assert result.sequence[0] == m0, \
+    assert len(result['sequence']) == 2, \
+        msg % "len(result.match['sequence']) == 2"
+    assert result['sequence'][0] == m0, \
         msg % "first match is the provided match object"
-    m1 = result.sequence[1]
-    assert m1.pattern == 'bruteforce', msg % "second match is bruteforce"
-    assert [m1.i, m1.j] == [6, 9], \
+    m1 = result['sequence'][1]
+    assert m1['pattern'] == 'bruteforce', msg % "second match is bruteforce"
+    assert [m1['i'], m1['j']] == [6, 9], \
         msg % "second match covers full suffix after first match"
 
     msg = "returns bruteforce + match when match covers a suffix: %s"
@@ -75,13 +76,13 @@ def test_search():
     matches = [m1]
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
-    assert result.sequence.length == 2, \
-        msg % "result.match.sequence.length == 2"
-    m0 = result.sequence[0]
-    assert m0.pattern == 'bruteforce', msg % "first match is bruteforce"
-    assert [m0.i, m0.j] == [0, 2], \
+    assert len(result['sequence']) == 2, \
+        msg % "len(result.match['sequence']) == 2"
+    m0 = result['sequence'][0]
+    assert m0['pattern'] == 'bruteforce', msg % "first match is bruteforce"
+    assert [m0['i'], m0['j']] == [0, 2], \
         msg % "first match covers full prefix before second match"
-    assert result.sequence[1] == m1, \
+    assert result['sequence'][1] == m1, \
         msg % "second match is the provided match object"
 
     msg = "returns bruteforce + match + bruteforce " \
@@ -89,30 +90,30 @@ def test_search():
     matches = [m1] = [m(1, 8, 1)]
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
-    assert result.sequence.length == 3, msg % "result.length == 3"
-    assert result.sequence[
+    assert len(result['sequence']) == 3, msg % "len(result['sequence']) == 3"
+    assert result['sequence'][
                1] == m1, msg % "middle match is the provided match object"
-    m0 = result.sequence[0]
-    m2 = result.sequence[2]
-    assert m0.pattern == 'bruteforce', msg % "first match is bruteforce"
-    assert m2.pattern == 'bruteforce', msg % "third match is bruteforce"
-    assert [m0.i, m0.j] == [0, 0], \
+    m0 = result['sequence'][0]
+    m2 = result['sequence'][2]
+    assert m0['pattern'] == 'bruteforce', msg % "first match is bruteforce"
+    assert m2['pattern'] == 'bruteforce', msg % "third match is bruteforce"
+    assert [m0['i'], m0['j']] == [0, 0], \
         msg % "first match covers full prefix before second match"
-    assert [m2.i, m2.j] == [9, 9], \
+    assert [m2['i'], m2['j']] == [9, 9], \
         msg % "third match covers full suffix after second match"
 
     msg = "chooses lower-guesses match given two matches of the same span: %s"
     matches = [m0, m1] = [m(0, 9, 1), m(0, 9, 2)]
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
-    assert result.sequence.length == 1, msg % "result.length == 1"
-    assert result.sequence[0] == m0, msg % "result.sequence[0] == m0"
+    assert len(result['sequence']) == 1, msg % "len(result['sequence']) == 1"
+    assert result['sequence'][0] == m0, msg % "result['sequence'][0] == m0"
     # make sure ordering doesn't matter
     m0.guesses = 3
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
-    assert result.sequence.length == 1, msg % "result.length == 1"
-    assert result.sequence[0] == m1, msg % "result.sequence[0] == m1"
+    assert len(result['sequence']) == 1, msg % "len(result['sequence']) == 1"
+    assert result['sequence'][0] == m1, msg % "result['sequence'][0] == m1"
 
     msg = "when m0 covers m1 and m2, " \
           "choose [m0] when m0 < m1 * m2 * fact(2): %s"
@@ -120,7 +121,7 @@ def test_search():
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
     assert result.guesses == 3, msg % "total guesses == 3"
-    assert result.sequence == [m0], msg % "sequence is [m0]"
+    assert result['sequence'] == [m0], msg % "sequence is [m0]"
 
     msg = "when m0 covers m1 and m2, " \
           "choose [m1, m2] when m0 > m1 * m2 * fact(2): %s"
@@ -128,7 +129,7 @@ def test_search():
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
     assert result.guesses == 4, msg % "total guesses == 4"
-    assert result.sequence == [m1, m2], msg % "sequence is [m1, m2]"
+    assert result['sequence'] == [m1, m2], msg % "sequence is [m1, m2]"
 
 
 def test_calc_guesses():
