@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
 
 

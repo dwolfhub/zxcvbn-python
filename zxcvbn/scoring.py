@@ -1,5 +1,3 @@
-import operator
-
 from math import log, factorial, inf
 
 import re
