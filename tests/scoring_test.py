@@ -32,6 +32,7 @@ def test_nCk():
     ), "pascal's triangle identity"
 
 
+@pytest.mark.xfail(reason='not ready to be tested')
 def test_search():
     def m(i, j, guesses):
         return {
