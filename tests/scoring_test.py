@@ -5,7 +5,6 @@ from zxcvbn import scoring
 from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
 
 
-@pytest.mark.xfail(reason="python27")
 def test_returns_average_degree():
     assert scoring.calc_average_degree(ADJACENCY_GRAPHS['qwerty']) == \
            4.595744680851064
@@ -33,7 +32,6 @@ def test_nCk():
     ), "pascal's triangle identity"
 
 
-@pytest.mark.xfail(reason='not ready to be tested')
 def test_search():
     def m(i, j, guesses):
         return {
@@ -89,12 +87,13 @@ def test_search():
 
     msg = "returns bruteforce + match + bruteforce " \
           "when match covers an infix: %s"
-    matches = [m1] = [m(1, 8, 1)]
+    m1 = m(1, 8, 1)
+    matches = [m1]
     result = scoring.most_guessable_match_sequence(password, matches,
                                                    exclude_additive)
     assert len(result['sequence']) == 3, msg % "len(result['sequence']) == 3"
-    assert result['sequence'][
-               1] == m1, msg % "middle match is the provided match object"
+    assert result['sequence'][1] == m1, \
+        msg % "middle match is the provided match object"
     m0 = result['sequence'][0]
     m2 = result['sequence'][2]
     assert m0['pattern'] == 'bruteforce', msg % "first match is bruteforce"
@@ -153,7 +152,6 @@ def test_calc_guesses():
            scoring.date_guesses(match), msg
 
 
-@pytest.mark.skip('not ready to be tested')
 def test_repeat_guesses():
     for [token, base_token, repeat_count] in [
         ['aa', 'a', 2],
