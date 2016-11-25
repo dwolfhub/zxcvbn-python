@@ -77,16 +77,59 @@ SHIFTED_RX = re.compile('/[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]/')
 
 
 def omnimatch(password):
-    matches = (dictionary_match, reverse_dictionary_match,)  # TODO
+    matches = []
+    matchers = [
+        dictionary_match,
+        reverse_dictionary_match,
+        l33t_match,
+        spatial_match,
+        repeat_match,
+        sequence_match,
+        regex_match,
+        date_match,
+    ]
+    for matcher in matchers
+        @extend matches, matcher.call(this, password)
+
+    return sorted(matches)
 
 
 def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
-    pass  # TODO
+    matches = []
+    length = len(password)
+    password_lower = password.lower()
+    for dictionary_name, ranked_dict in _ranked_dictionaries:
+        for i in range(length):
+            for j in range(i, length):
+                if password_lower[i:j + 1] in ranked_dict:
+                    word = password_lower[i:j + 1]
+                    rank = ranked_dict[word]
+                    matches.append({
+                        'pattern': 'dictionary',
+                        'i': i,
+                        'j': j,
+                        'token': password[i:j + 1],
+                        'matched_word': word,
+                        'rank': rank,
+                        'dictionary_name': dictionary_name,
+                        'reversed': False,
+                        'l33t': False,
+                    })
+
+    return reversed(matches)
 
 
 def reverse_dictionary_match(password,
                              _ranked_dictionaries=RANKED_DICTIONARIES):
-    pass  # TODO
+    reversed_password = ''.join(reversed(password))
+    matches = dictionary_match(reversed_password, _ranked_dictionaries)
+    for match in matches:
+        match['token'] = ''.join(reversed(match['token']))
+        match['reversed'] = True
+        match['i'], match['j'] = len(password) - 1 - match['j'], \
+                                 len(password) - 1 - match['i']
+
+    return sorted(matches)
 
 
 def set_user_input_dictionary(ordered_list):
@@ -107,44 +150,51 @@ def relevant_l33t_subtable(password, table):
     return subtable
 
 
-def __dedup(subs):
-    # TODO
-    return subs
-
-
-def __helper(table, keys, subs):
-    if not len(keys):
-        return
-
-    first_key = keys[0]
-    rest_keys = keys[1:]
-    next_subs = []
-    for l33t_chr in table[first_key]:
-        for sub in subs:
-            dup_l33t_index = -1
-            for i in range(len(sub)):
-                if sub[i][0] == l33t_chr:
-                    dup_l33t_index = i
-                    break
-            if dup_l33t_index == -1:
-                sub_extension = l33t_chr + first_key
-                next_subs.append(sub_extension)
-            else:
-                sub_alternative = sub
-                sub_alternative.pop(dup_l33t_index)
-                sub_alternative.append([l33t_chr, first_key])
-                next_subs.append(sub)
-                next_subs.append(sub_alternative)
-    subs = __dedup(next_subs)
-    __helper(rest_keys)
-    # TODO this needs to return something or make sure original var is changeds
-
-
 def enumerate_l33t_subs(table):
     keys = table.keys()
     subs = [[]]
 
-    __helper(table, keys, subs)
+    def dedup(subs):
+        deduped = []
+        members = {}
+
+        for sub in subs:
+            assoc = [(k, v) for k, v in sub]
+            assoc.sort()
+            label = '-'.join([k + ',' + v for k, v in assoc])
+            if label not in members:
+                members[label] = True
+                deduped.append(sub)
+
+        return deduped
+
+    def helper(table, keys, subs):
+        if not len(keys):
+            return
+
+        first_key = keys[0]
+        rest_keys = keys[1:]
+        next_subs = []
+        for l33t_chr in table[first_key]:
+            for sub in subs:
+                dup_l33t_index = -1
+                for i in range(len(sub)):
+                    if sub[i][0] == l33t_chr:
+                        dup_l33t_index = i
+                        break
+                if dup_l33t_index == -1:
+                    sub_extension = l33t_chr + first_key
+                    next_subs.append(sub_extension)
+                else:
+                    sub_alternative = sub
+                    sub_alternative.pop(dup_l33t_index)
+                    sub_alternative.append([l33t_chr, first_key])
+                    next_subs.append(sub)
+                    next_subs.append(sub_alternative)
+        subs = dedup(next_subs)
+        helper(rest_keys)
+
+    helper(table, keys, subs)
 
     sub_dicts = []
     for sub in subs:
@@ -155,7 +205,7 @@ def enumerate_l33t_subs(table):
     return sub_dicts
 
 
-def __translate(string, chr_map):
+def translate(string, chr_map):
     chars = []
     for char in string.split():
         if chr_map[char]:
@@ -175,7 +225,7 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
         if not bool(sub):
             break
 
-        subbed_password = __translate(password, sub)
+        subbed_password = translate(password, sub)
         for match in dictionary_match(subbed_password, _ranked_dictionaries):
             token = password[match['i']:match['j']]
             if token.lower() == match['matched_word']:

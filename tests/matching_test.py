@@ -1,11 +1,8 @@
 from unittest import TestCase
 
-import pytest
-
-from zxcvbn.matching import repeat_match
+from zxcvbn import matching
 
 
-@pytest.mark.skip(reason="not ready to be tested")
 def test_matching_utils():
     chr_map = {
         'a': 'A',
@@ -23,4 +20,4 @@ def test_matching_utils():
         ['', {}, ''],
         ['abc', {}, 'abc'],
     ]:
-        assert matching.translate(string, map) == result, "translates '%s' to '%s' with provided charmap" % (string, result)
+        assert matching.tra(string, map) == result, "translates '%s' to '%s' with provided charmap" % (string, result)

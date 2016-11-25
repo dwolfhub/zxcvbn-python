@@ -68,8 +68,11 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
 
     # partition matches into sublists according to ending index j
     matches_by_j = [[] for _ in range(n)]
-    for m in matches:
-        matches_by_j[m['j']].append(m)
+    try:
+        for m in matches:
+            matches_by_j[m['j']].append(m)
+    except TypeError:
+        pass
     # small detail: for deterministic output, sort each sublist by i.
     for lst in matches_by_j:
         lst.sort(key=lambda m1: m1['i'])
@@ -258,7 +261,7 @@ def dictionary_guesses(match):
 
 
 def repeat_guesses(match):
-    assert False
+    return match['base_guesses'] * match['repeat_count']
 
 
 def sequence_guesses(match):
@@ -278,10 +281,6 @@ def sequence_guesses(match):
         base_guesses *= 2
 
     return base_guesses * len(match['token'])
-
-
-MIN_YEAR_SPACE = 20
-REFERENCE_YEAR = 2016
 
 
 def regex_guesses(match):
