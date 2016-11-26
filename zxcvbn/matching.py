@@ -77,6 +77,40 @@ DATE_SPLITS = {
 SHIFTED_RX = re.compile('/[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]/')
 
 
+def sorter(m1, m2):
+    i_diff = m1['i'] - m2['i']
+    j_diff = m1['j'] - m2['j']
+    if i_diff > 0:
+        return 1
+    elif i_diff < 0:
+        return -1
+    elif j_diff > 0:
+        return 1
+    elif j_diff < 0:
+        return -1
+    else:
+        return 0
+
+
+def omnimatch(password):
+    matches = []
+    for matcher in [
+        dictionary_match,
+        reverse_dictionary_match,
+        l33t_match,
+        spatial_match,
+        repeat_match,
+        sequence_match,
+        regex_match,
+        date_match,
+    ]:
+        match = matcher(password)
+        if match:
+            matches += match
+
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
+
+
 def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     matches = []
     length = len(password)
@@ -141,7 +175,7 @@ def enumerate_l33t_subs(table):
         deduped = []
         members = {}
         for sub in subs:
-            assoc = [(v, k) for k,v in enumerate(list(sub))]
+            assoc = [(v, k) for k, v in enumerate(list(sub))]
             label = '-'.join([k + ',' + str(v) for k, v in assoc])
             if label not in members:
                 members[label] = True
@@ -285,20 +319,13 @@ def spacial_match_helper(password, graph, graph_name):
 
 def repeat_match(password):
     matches = []
-    greedy = re.compile(r'(.+)\1+')
-    lazy = re.compile(r'(.+?)\1+')
-    lazy_anchored = re.compile(r'^(.+?)\1+$')
+    greedy = re.compile('(.+)\1+')
+    lazy = re.compile('(.+?)\1+')
+    lazy_anchored = re.compile('^(.+?)\1+$')
     last_index = 0
     while last_index < len(password):
-        # greedy.last_index = lazy.last_index = last_index
-        greedy_match = [
-            (match.start(), match.end(), match.group(0), match.group(1))
-            for match in greedy.finditer(password)
-            ]
-        lazy_match = [
-            (match.start(), match.end(), match.group(0), match.group(1))
-            for match in lazy.finditer(password)
-            ]
+        greedy_match = greedy.match(password)
+        lazy_match = lazy.match(password)
 
         if not greedy_match:
             break
@@ -596,23 +623,3 @@ def two_to_four_digit_year(year):
         return year + 1900
     else:
         return year + 2000
-
-
-def omnimatch(password):
-    matches = []
-    return [] # TODO stop continuous loop
-    for matcher in [
-        dictionary_match,
-        reverse_dictionary_match,
-        l33t_match,
-        spatial_match,
-        repeat_match,
-        sequence_match,
-        regex_match,
-        date_match,
-    ]:
-        match = matcher(password)
-        if match:
-            matches += match
-
-    return sorted(matches)
