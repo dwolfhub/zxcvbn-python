@@ -1,3 +1,4 @@
+from zxcvbn import scoring
 from . import adjacency_graphs
 from zxcvbn.frequency_lists import FREQUENCY_LISTS
 import re
@@ -42,7 +43,7 @@ L33T_TABLE = {
 }
 
 REGEXEN = {
-    'recent_year': re.compile('/19\d\d|200\d|201\d/g')
+    'recent_year': re.compile('/19\d\d|200\d|201\d/g'),
 }
 
 DATE_MAX_YEAR = 2050
@@ -76,29 +77,11 @@ DATE_SPLITS = {
 SHIFTED_RX = re.compile('/[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]/')
 
 
-def omnimatch(password):
-    matches = []
-    matchers = [
-        dictionary_match,
-        reverse_dictionary_match,
-        l33t_match,
-        spatial_match,
-        repeat_match,
-        sequence_match,
-        regex_match,
-        date_match,
-    ]
-    for matcher in matchers
-        @extend matches, matcher.call(this, password)
-
-    return sorted(matches)
-
-
 def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     matches = []
     length = len(password)
     password_lower = password.lower()
-    for dictionary_name, ranked_dict in _ranked_dictionaries:
+    for dictionary_name, ranked_dict in _ranked_dictionaries.items():
         for i in range(length):
             for j in range(i, length):
                 if password_lower[i:j + 1] in ranked_dict:
@@ -142,7 +125,7 @@ def relevant_l33t_subtable(password, table):
         password_chars[char] = True
 
     subtable = {}
-    for letter, subs in table:
+    for letter, subs in table.items():
         relevant_subs = [sub for sub in subs if sub in password_chars]
         if len(relevant_subs) > 0:
             subtable[letter] = relevant_subs
@@ -151,24 +134,22 @@ def relevant_l33t_subtable(password, table):
 
 
 def enumerate_l33t_subs(table):
-    keys = table.keys()
+    keys = list(table)
     subs = [[]]
 
     def dedup(subs):
         deduped = []
         members = {}
-
         for sub in subs:
-            assoc = [(k, v) for k, v in sub]
-            assoc.sort()
-            label = '-'.join([k + ',' + v for k, v in assoc])
+            assoc = [(v, k) for k,v in enumerate(list(sub))]
+            label = '-'.join([k + ',' + str(v) for k, v in assoc])
             if label not in members:
                 members[label] = True
                 deduped.append(sub)
 
         return deduped
 
-    def helper(table, keys, subs):
+    def helper(keys, subs):
         if not len(keys):
             return
 
@@ -192,23 +173,23 @@ def enumerate_l33t_subs(table):
                     next_subs.append(sub)
                     next_subs.append(sub_alternative)
         subs = dedup(next_subs)
-        helper(rest_keys)
+        helper(rest_keys, subs)
 
-    helper(table, keys, subs)
+    helper(keys, subs)
 
     sub_dicts = []
     for sub in subs:
         sub_dict = {}
         for l33t_chr, chr in sub:
             sub_dict[l33t_chr] = chr
-        sub_dicts.append()
+        sub_dicts.append(sub_dict)
     return sub_dicts
 
 
 def translate(string, chr_map):
     chars = []
-    for char in string.split():
-        if chr_map[char]:
+    for char in list(string):
+        if chr_map.get(char, False):
             chars.append(chr_map[char])
         else:
             chars.append(char)
@@ -269,7 +250,8 @@ def spacial_match_helper(password, graph, graph_name):
             found = False
             found_direction = -1
             cur_direction = -1
-            adjacents = graph[prev_char] or []
+            adjacents = graph.get(prev_char, False) or []
+            # consider growing pattern by one character if j hasn't gone over the edge.
             if j < password_len:
                 cur_char = password[j]
                 for adj in adjacents:
@@ -345,9 +327,292 @@ def repeat_match(password):
     return matches
 
 
-def spacial_match(password, _graphs=GRAPHS):
+def spatial_match(password, _graphs=GRAPHS):
     matches = []
-    for graph_name, graph in _graphs:
+    for graph_name, graph in _graphs.items():
         matches.append(spacial_match_helper(password, graph, graph_name))
 
     return matches.sort()
+
+
+MAX_DELTA = 5
+
+
+def sequence_match(password):
+    if len(password) == 1:
+        return []
+
+    def update(i, j, delta):
+        if 0 < abs(delta) <= MAX_DELTA:
+            token = password[i:j + 1]
+            if re.compile('^[a-z]+$').match(token):
+                sequence_name = 'lower'
+                sequence_space = 26
+            elif re.compile('^[A-Z]+$').match(token):
+                sequence_name = 'upper'
+                sequence_space = 26
+            elif re.compile('^\d+$').match(token):
+                sequence_name = 'digits'
+                sequence_space = 10
+            else:
+                sequence_name = 'unicode'
+                sequence_space = 26
+            result.append({
+                'pattern': 'sequence',
+                'i': i,
+                'j': j,
+                'token': password[i:j + 1],
+                'sequence_name': sequence_name,
+                'sequence_space': sequence_space,
+                'ascending': delta > 0
+            })
+
+    result = []
+    i = 0
+    last_delta = None
+
+    for k in range(1, len(password)):
+        delta = ord(password[k]) - ord(password[k - 1])
+        if not last_delta:
+            last_delta = delta
+        if delta == last_delta:
+            continue
+        j = k - 1
+        update(i, j, last_delta)
+        i = last_delta = delta
+    update(i, len(password) - 1, last_delta)
+
+    return result
+
+
+def regex_match(password, _regexen=REGEXEN):
+    matches = []
+    for name, regex in _regexen.items():
+        rx_match = regex.match(password)
+        while rx_match:
+            token = rx_match[0]
+            matches.append({
+                'pattern': 'regex',
+                'token': token,
+                'i': rx_match['index'],
+                'j': rx_match['index'] + len(rx_match[0]) - 1,
+                'regex_name': name,
+                'regex_match': rx_match,
+            })
+
+    return sorted(matches)
+
+
+def date_match(password):
+    # a "date" is recognized as:
+    #   any 3-tuple that starts or ends with a 2- or 4-digit year,
+    #   with 2 or 0 separator chars (1.1.91 or 1191),
+    #   maybe zero-padded (01-01-91 vs 1-1-91),
+    #   a month between 1 and 12,
+    #   a day between 1 and 31.
+    #
+    # note: this isn't true date parsing in that "feb 31st" is allowed,
+    # this doesn't check for leap years, etc.
+    #
+    # recipe:
+    # start with regex to find maybe-dates, then attempt to map the integers
+    # onto month-day-year to filter the maybe-dates into dates.
+    # finally, remove matches that are substrings of other matches to reduce noise.
+    #
+    # note: instead of using a lazy or greedy regex to find many dates over the full string,
+    # this uses a ^...$ regex against every substring of the password -- less performant but leads
+    # to every possible date match.
+    matches = []
+    maybe_date_no_separator = re.compile('^\d{4,8}$')
+    maybe_date_with_separator = re.compile(
+        '^(\d{1,4})([\s/\_.-])(\d{1,2})\2(\d{1,4})$'
+    )
+
+    for i in range(len(password) - 3):
+        for j in range(i + 3, i + 8):
+            if j >= len(password):
+                break
+
+            token = password[i:j + 1]
+            if not maybe_date_no_separator.match(token):
+                continue
+            candidates = []
+            for k, l in DATE_SPLITS[len(token)]:
+                dmy = map_ints_to_dmy([
+                    int(token[0:k]),
+                    int(token[k:l]),
+                    int(token[l:])
+                ])
+                if dmy:
+                    candidates.append(dmy)
+            if not len(candidates) > 0:
+                continue
+            # at this point: different possible dmy mappings for the same i,j substring.
+            # match the candidate date that likely takes the fewest guesses: a year closest to 2000.
+            # (scoring.REFERENCE_YEAR).
+            #
+            # ie, considering '111504', prefer 11-15-04 to 1-1-1504
+            # (interpreting '04' as 2004)
+            best_candidate = candidates[0]
+
+            def metric(candidate):
+                return abs(candidate['year'] - scoring.REFERENCE_YEAR)
+
+            min_distance = metric(candidates[0])
+            for candidate in candidates[1:]:
+                distance = metric(candidate)
+                if distance < min_distance:
+                    best_candidate, min_distance = candidate, distance
+            matches.append({
+                'pattern': 'date',
+                'token': token,
+                'i': i,
+                'j': j,
+                'separator': '',
+                'year': best_candidate['year'],
+                'month': best_candidate['month'],
+                'day': best_candidate['day'],
+            })
+
+    for i in range(len(password) - 5):
+        for j in range(i + 5, i + 10):
+            if j >= len(password):
+                break
+            token = password[i:j + 1]
+            rx_match = maybe_date_with_separator.match(token)
+            if not rx_match:
+                continue
+            dmy = map_ints_to_dmy([
+                int(rx_match[1]),
+                int(rx_match[3]),
+                int(rx_match[4]),
+            ])
+            if not dmy:
+                continue
+            matches.append({
+                'pattern': 'date',
+                'token': token,
+                'i': i,
+                'j': j,
+                'separator': rx_match[2],
+                'year': dmy['year'],
+                'month': dmy['month'],
+                'day': dmy['day'],
+            })
+
+    # matches now contains all valid date strings in a way that is tricky to capture
+    # with regexes only. while thorough, it will contain some unintuitive noise:
+    #
+    # '2015_06_04', in addition to matching 2015_06_04, will also contain
+    # 5(!) other date matches: 15_06_04, 5_06_04, ..., even 2015 (matched as 5/1/2020)
+    #
+    # to reduce noise, remove date matches that are strict substrings of others
+    def filter_fun(match):
+        is_submatch = False
+        for other_match in matches:
+            if match == other_match:
+                continue
+            if other_match['i'] <= match['i'] and other_match['j'] >= match[
+                'j']:
+                is_submatch = True
+                break
+        return not is_submatch
+
+    return filter(filter_fun, matches)
+
+
+def map_ints_to_dmy(ints):
+    # given a 3-tuple, discard if:
+    #   middle int is over 31 (for all dmy formats, years are never allowed in the middle)
+    #   middle int is zero
+    #   any int is over the max allowable year
+    #   any int is over two digits but under the min allowable year
+    #   2 ints are over 31, the max allowable day
+    #   2 ints are zero
+    #   all ints are over 12, the max allowable month
+    if ints[1] > 31 or ints[1] <= 0:
+        return
+    over_12 = 0
+    over_31 = 0
+    under_1 = 0
+    for int in ints:
+        if 99 < int < DATE_MIN_YEAR or int > DATE_MAX_YEAR:
+            return
+        if int > 31:
+            over_31 += 1
+        if int > 12:
+            over_12 += 1
+        if int <= 0:
+            under_1 += 1
+    if over_31 >= 2 or over_12 == 3 or under_1 >= 2:
+        return
+
+    # first look for a four digit year: yyyy + daymonth or daymonth + yyyy
+    possible_four_digit_splits = [
+        (ints[2], ints[0:2]),
+        (ints[0], ints[1:3]),
+    ]
+    for y, rest in possible_four_digit_splits:
+        if DATE_MIN_YEAR <= y <= DATE_MAX_YEAR:
+            dm = map_ints_to_dm(rest)
+            if dm:
+                return {
+                    'year': y,
+                    'month': dm['month'],
+                    'day': dm['day'],
+                }
+            else:
+                # for a candidate that includes a four-digit year,
+                # when the remaining ints don't match to a day and month,
+                # it is not a date.
+                return
+    for y, rest in possible_four_digit_splits:
+        dm = map_ints_to_dm(rest)
+        if dm:
+            y = two_to_four_digit_year(y)
+            return {
+                'year': y,
+                'month': dm['month'],
+                'day': dm['day'],
+            }
+
+
+def map_ints_to_dm(ints):
+    ref = [ints, reversed(ints)]
+    for i in range(len(ref)):
+        d = ref[i][0]
+        m = ref[i][1]
+        if (1 <= d <= 31) and (1 <= m <= 12):
+            return {
+                'day': d,
+                'month': m,
+            }
+
+
+def two_to_four_digit_year(year):
+    if year > 99:
+        return year
+    elif year > 50:
+        return year + 1900
+    else:
+        return year + 2000
+
+
+def omnimatch(password):
+    matches = []
+    return [] # TODO stop continuous loop
+    for matcher in [
+        dictionary_match,
+        reverse_dictionary_match,
+        l33t_match,
+        spatial_match,
+        repeat_match,
+        sequence_match,
+        regex_match,
+        date_match,
+    ]:
+        match = matcher(password)
+        if match:
+            matches += match
+
+    return sorted(matches)

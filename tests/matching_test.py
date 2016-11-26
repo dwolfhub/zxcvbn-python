@@ -20,4 +20,5 @@ def test_matching_utils():
         ['', {}, ''],
         ['abc', {}, 'abc'],
     ]:
-        assert matching.tra(string, map) == result, "translates '%s' to '%s' with provided charmap" % (string, result)
+        assert matching.translate(string, map) == result, \
+            "translates '%s' to '%s' with provided charmap" % (string, result)
