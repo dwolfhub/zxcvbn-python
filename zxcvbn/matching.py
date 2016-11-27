@@ -77,21 +77,6 @@ DATE_SPLITS = {
 SHIFTED_RX = re.compile('/[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]/')
 
 
-def sorter(m1, m2):
-    i_diff = m1['i'] - m2['i']
-    j_diff = m1['j'] - m2['j']
-    if i_diff > 0:
-        return 1
-    elif i_diff < 0:
-        return -1
-    elif j_diff > 0:
-        return 1
-    elif j_diff < 0:
-        return -1
-    else:
-        return 0
-
-
 def omnimatch(password):
     matches = []
     for matcher in [
