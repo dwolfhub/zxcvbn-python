@@ -189,3 +189,93 @@ def reverse_dictionary_matching():
                       'dictionary_name': ['d1', 'd1'],
                       'rank': [2, 4],
                   })
+
+
+def l33t_matching():
+    test_table = {
+        'a': ['4', '@'],
+        'c': ['(', '{', '[', '<'],
+        'g': ['6', '9'],
+        'o': ['0'],
+    }
+    for pw, expected in [
+        ['', {}],
+        ['abcdefgo123578!#$&*)]}>', {}],
+        ['a', {}],
+        ['4', {'a': ['4']}],
+        ['4@', {'a': ['4', '@']}],
+        ['4({60', {'a': ['4'], 'c': ['(', '{'], 'g': ['6'], 'o': ['0']}],
+    ]:
+        msg = "reduces l33t table to only the substitutions that a password might be employing"
+        assert matching.relevant_l33t_subtable(pw, test_table) == expected, msg
+
+    for table, subs in [
+        [{}, [{}]],
+        [{'a': ['@']}, [{'@': 'a'}]],
+        [{'a': ['@', '4']}, [{'@': 'a'}, {'4': 'a'}]],
+        [{'a': ['@', '4'], 'c': ['(']},
+         [{'@': 'a', '(': 'c'}, {'4': 'a', '(': 'c'}]],
+    ]:
+        msg = "enumerates the different sets of l33t substitutions a password might be using"
+        assert matching.enumerate_l33t_subs(table) == subs, msg
+
+    def lm(pw):
+        return matching.l33t_match(pw, dicts, test_table)
+
+    dicts = {
+        'words': {
+            'aac': 1,
+            'password': 3,
+            'paassword': 4,
+            'asdf0': 5,
+        },
+        'words2': {
+            'cgo': 1,
+        }
+    }
+    assert lm('') == [], "doesn't match ''"
+    assert lm('password') == [], "doesn't match pure dictionary words"
+    for password, pattern, word, dictionary_name, rank, ij, sub in [
+        ['p4ssword', 'p4ssword', 'password', 'words', 3, [0, 7], {'4': 'a'}],
+        ['p@ssw0rd', 'p@ssw0rd', 'password', 'words', 3, [0, 7],
+         {'@': 'a', '0': 'o'}],
+        ['aSdfO{G0asDfO', '{G0', 'cgo', 'words2', 1, [5, 7],
+         {'{': 'c', '0': 'o'}],
+    ]:
+        msg = "matches against common l33t substitutions"
+        check_matches(msg, lm(password), 'dictionary', [pattern], [ij],
+                      {
+                          'l33t': [True],
+                          'sub': [sub],
+                          'matched_word': [word],
+                          'rank': [rank],
+                          'dictionary_name': [dictionary_name],
+                          })
+
+    matches = lm('@a(go{G0')
+    msg = "matches against overlapping l33t patterns"
+    check_matches(msg, matches, 'dictionary', ['@a(', '(go', '{G0'],
+                  [[0, 2], [2, 4], [5, 7]], {
+                      'l33t': [True, True, True],
+                      'sub': [{'@': 'a', '(': 'c'}, {'(': 'c'},
+                              {'{': 'c', '0': 'o'}],
+                      'matched_word': ['aac', 'cgo', 'cgo'],
+                      'rank': [1, 1, 1],
+                      'dictionary_name': ['words', 'words2', 'words2'],
+                  })
+
+    msg = "doesn't match when multiple l33t substitutions are needed for the same letter"
+    assert lm('p4@ssword') == [], msg
+
+    msg = "doesn't match single-character l33ted words"
+    matches = matching.l33t_match('4 1 @')
+    assert matches == [], msg
+
+    # known issue: subsets of substitutions aren't tried.
+    # for long inputs, trying every subset of every possible substitution could quickly get large,
+    # but there might be a performant way to fix.
+    # (so in this example: {'4': a, '0': 'o'} is detected as a possible sub,
+    # but the subset {'4': 'a'} isn't tried, missing the match for asdf0.)
+    # TODO: consider partially fixing by trying all subsets of size 1 and maybe 2
+    msg = "doesn't match with subsets of possible l33t substitutions"
+    assert lm('4sdf0') == [], msg
