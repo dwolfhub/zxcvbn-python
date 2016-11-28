@@ -3,6 +3,20 @@ from unittest import TestCase
 from zxcvbn import matching
 
 
+def genpws(pattern, prefixes, suffixes):
+    prefixes = prefixes
+    suffixes = suffixes
+    for lst in [prefixes, suffixes]:
+        if '' not in lst:
+            lst.insert(0, '')
+    result = []
+    for prefix in prefixes:
+        for suffix in suffixes:
+            i, j = len(prefix), len(prefix) + len(pattern) - 1
+            result.append([prefix + pattern + suffix, i, j])
+    return result
+
+
 def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
     if isinstance(pattern_names, str):
         # shortcut: if checking for a list of the same type of patterns,
@@ -25,7 +39,8 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
         i, j = ijs[k]
         msg = "%s: matches[%s].pattern == '%s'" % (prefix, k, pattern_name)
         assert match.pattern == pattern_name, msg
-        msg = "%s: matches[%s] should have [i, j] of [%s, %s]" % (prefix, k, i, j)
+        msg = "%s: matches[%s] should have [i, j] of [%s, %s]" % (
+            prefix, k, i, j)
         assert [match.i, match.j] == [i, j], msg
         msg = "%s: matches[%s].token == '%s'" % (prefix, k, pattern)
         assert match.token == pattern, msg
@@ -102,9 +117,9 @@ def test_dictionary_matching():
     patterns = ['BoaRd', 'Z']
     msg = "ignores uppercasing"
     check_matches(msg, matches, 'dictionary', patterns, [[0, 4], [5, 5]], {
-        matched_word: ['board', 'z'],
-        rank: [3, 1],
-        dictionary_name: ['d1', 'd2'],
+        'matched_word': ['board', 'z'],
+        'rank': [3, 1],
+        'dictionary_name': ['d1', 'd2'],
     })
 
     prefixes = ['q', '%%']
@@ -152,4 +167,25 @@ def test_dictionary_matching():
                   [[0, 2], [3, 5]], {
                       'matched_word': ['foo', 'bar'],
                       'rank': [1, 2],
+                  })
+
+
+def reverse_dictionary_matching():
+    test_dicts = {
+        'd1': {
+            '123': 1,
+            '321': 2,
+            '456': 3,
+            '654': 4,
+        }
+    }
+    password = '0123456789'
+    matches = matching.reverse_dictionary_match(password, test_dicts)
+    msg = 'matches against reversed words'
+    check_matches(msg, matches, 'dictionary', ['123', '456'], [[1, 3], [4, 6]],
+                  {
+                      'matched_word': ['321', '654'],
+                      'reversed': [True, True],
+                      'dictionary_name': ['d1', 'd1'],
+                      'rank': [2, 4],
                   })
