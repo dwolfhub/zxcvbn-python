@@ -22,13 +22,12 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
     if isinstance(pattern_names, str):
         # shortcut: if checking for a list of the same type of patterns,
         # allow passing a string 'pat' instead of array ['pat', 'pat', ...]
-        pattern_names *= (len(patterns) - 1)
+        pattern_names = [pattern_names] * len(patterns)
 
     is_equal_len_args = len(pattern_names) == len(patterns) == len(ijs)
     for prop, lst in props.items():
         # props is structured as: keys that points to list of values
-        is_equal_len_args = is_equal_len_args and (len(lst) == len(patterns))
-        if not is_equal_len_args:
+        if not is_equal_len_args or len(lst) != len(patterns):
             raise Exception('unequal argument lists to check_matches')
 
     msg = "%s: len(matches) == %s" % (prefix, len(patterns))
@@ -39,12 +38,12 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
         pattern = patterns[k]
         i, j = ijs[k]
         msg = "%s: matches[%s].pattern == '%s'" % (prefix, k, pattern_name)
-        assert match.pattern == pattern_name, msg
+        assert match['pattern'] == pattern_name, msg
         msg = "%s: matches[%s] should have [i, j] of [%s, %s]" % (
             prefix, k, i, j)
-        assert [match.i, match.j] == [i, j], msg
+        assert [match['i'], match['j']] == [i, j], msg
         msg = "%s: matches[%s].token == '%s'" % (prefix, k, pattern)
-        assert match.token == pattern, msg
+        assert match['token'] == pattern, msg
         for prop_name, prop_list in props.items():
             prop_msg = prop_list[k]
             if isinstance(prop_msg, basestring):
@@ -441,7 +440,7 @@ def test_regex_matching():
         matches = matching.regex_match(pattern)
         msg = "matches #{pattern} as a #{name} pattern"
         check_matches(msg, matches, 'regex', [pattern],
-                      [[0, pattern.length - 1]],
+                      [[0, len(pattern) - 1]],
                       {'regex_name': [name]})
 
 
@@ -567,8 +566,10 @@ def test_omnimatch():
     ]:
         included = False
         for match in matches:
-            if match.i == i and match.j == j and match.pattern == pattern_name:
+            if match['i'] == i and match['j'] == j \
+                    and match['pattern'] == pattern_name:
                 included = True
         msg = "for %s, matches a %s pattern at [%s, %s]" % (
-        password, pattern_name, i, j)
+            password, pattern_name, i, j
+        )
         assert included, msg

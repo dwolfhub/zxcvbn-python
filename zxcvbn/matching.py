@@ -355,29 +355,30 @@ def sequence_match(password):
         return []
 
     def update(i, j, delta):
-        if 0 < abs(delta) <= MAX_DELTA:
-            token = password[i:j + 1]
-            if re.compile('^[a-z]+$').match(token):
-                sequence_name = 'lower'
-                sequence_space = 26
-            elif re.compile('^[A-Z]+$').match(token):
-                sequence_name = 'upper'
-                sequence_space = 26
-            elif re.compile('^\d+$').match(token):
-                sequence_name = 'digits'
-                sequence_space = 10
-            else:
-                sequence_name = 'unicode'
-                sequence_space = 26
-            result.append({
-                'pattern': 'sequence',
-                'i': i,
-                'j': j,
-                'token': password[i:j + 1],
-                'sequence_name': sequence_name,
-                'sequence_space': sequence_space,
-                'ascending': delta > 0
-            })
+        if j - 1 > 1 or delta and abs(delta) == 1:
+            if 0 < abs(delta) <= MAX_DELTA:
+                token = password[i:j + 1]
+                if re.compile('^[a-z]+$').match(token):
+                    sequence_name = 'lower'
+                    sequence_space = 26
+                elif re.compile('^[A-Z]+$').match(token):
+                    sequence_name = 'upper'
+                    sequence_space = 26
+                elif re.compile('^\d+$').match(token):
+                    sequence_name = 'digits'
+                    sequence_space = 10
+                else:
+                    sequence_name = 'unicode'
+                    sequence_space = 26
+                result.append({
+                    'pattern': 'sequence',
+                    'i': i,
+                    'j': j,
+                    'token': password[i:j + 1],
+                    'sequence_name': sequence_name,
+                    'sequence_space': sequence_space,
+                    'ascending': delta > 0
+                })
 
     result = []
     i = 0
