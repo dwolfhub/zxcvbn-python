@@ -439,9 +439,11 @@ def test_regex_matching():
     ]:
         matches = matching.regex_match(pattern)
         msg = "matches #{pattern} as a #{name} pattern"
-        check_matches(msg, matches, 'regex', [pattern],
-                      [[0, len(pattern) - 1]],
-                      {'regex_name': [name]})
+        check_matches(
+            msg, matches, 'regex', [pattern],
+            [[0, len(pattern) - 1]],
+            {'regex_name': [name]}
+        )
 
 
 def date_matching():

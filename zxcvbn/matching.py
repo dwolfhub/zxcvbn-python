@@ -118,7 +118,7 @@ def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
                         'l33t': False,
                     })
 
-    return reversed(matches)
+    return list(reversed(matches))
 
 
 def reverse_dictionary_match(password,
@@ -131,7 +131,7 @@ def reverse_dictionary_match(password,
         match['i'], match['j'] = len(password) - 1 - match['j'], \
                                  len(password) - 1 - match['i']
 
-    return sorted(matches)
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 def set_user_input_dictionary(ordered_list):
@@ -153,7 +153,7 @@ def relevant_l33t_subtable(password, table):
 
 
 def enumerate_l33t_subs(table):
-    keys = list(table)
+    keys = list(table.keys())
     subs = [[]]
 
     def dedup(subs):
@@ -170,7 +170,7 @@ def enumerate_l33t_subs(table):
 
     def helper(keys, subs):
         if not len(keys):
-            return
+            return subs
 
         first_key = keys[0]
         rest_keys = keys[1:]
@@ -183,7 +183,7 @@ def enumerate_l33t_subs(table):
                         dup_l33t_index = i
                         break
                 if dup_l33t_index == -1:
-                    sub_extension = l33t_chr + first_key
+                    sub_extension = sub + l33t_chr + ',' + first_key
                     next_subs.append(sub_extension)
                 else:
                     sub_alternative = sub
@@ -191,15 +191,15 @@ def enumerate_l33t_subs(table):
                     sub_alternative.append([l33t_chr, first_key])
                     next_subs.append(sub)
                     next_subs.append(sub_alternative)
+
         subs = dedup(next_subs)
-        helper(rest_keys, subs)
+        return helper(rest_keys, subs)
 
-    helper(keys, subs)
-
-    sub_dicts = []
+    subs = helper(keys, subs)
+    sub_dicts = []  # convert from assoc lists to dicts
     for sub in subs:
         sub_dict = {}
-        for l33t_chr, chr in sub:
+        for l33t_chr, chr in list(sub):
             sub_dict[l33t_chr] = chr
         sub_dicts.append(sub_dict)
     return sub_dicts
