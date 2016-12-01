@@ -160,7 +160,8 @@ def enumerate_l33t_subs(table):
         deduped = []
         members = {}
         for sub in subs:
-            assoc = [(v, k) for k, v in enumerate(list(sub))]
+            assoc = [(k, v) for k, v in sub]
+            assoc.sort()
             label = '-'.join([k + ',' + str(v) for k, v in assoc])
             if label not in members:
                 members[label] = True
@@ -183,8 +184,8 @@ def enumerate_l33t_subs(table):
                         dup_l33t_index = i
                         break
                 if dup_l33t_index == -1:
-                    sub_extension = sub + l33t_chr + ',' + first_key
-                    next_subs.append(sub_extension)
+                    sub.append([l33t_chr, first_key])
+                    next_subs.append(sub)
                 else:
                     sub_alternative = sub
                     sub_alternative.pop(dup_l33t_index)
