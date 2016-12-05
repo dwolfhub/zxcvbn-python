@@ -158,7 +158,7 @@ def enumerate_l33t_subs(table):
         deduped = []
         members = {}
         for sub in subs:
-            assoc = [(k, v) for k, v in sub]
+            assoc = [(k, v) for v, k in sub]
             assoc.sort()
             label = '-'.join([k + ',' + str(v) for k, v in assoc])
             if label not in members:
@@ -215,8 +215,7 @@ def translate(string, chr_map):
     return ''.join(chars)
 
 
-def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
-               _l33t_table=L33T_TABLE):
+def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES, _l33t_table=L33T_TABLE):
     matches = []
 
     for sub in enumerate_l33t_subs(
@@ -552,8 +551,7 @@ def date_match(password):
         for other_match in matches:
             if match == other_match:
                 continue
-            if other_match['i'] <= match['i'] and other_match['j'] >= match[
-                'j']:
+            if other_match['i'] <= match['i'] and other_match['j'] >= match['j']:
                 is_submatch = True
                 break
         return not is_submatch

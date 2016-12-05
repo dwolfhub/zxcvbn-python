@@ -31,7 +31,11 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
             raise Exception('unequal argument lists to check_matches')
 
     msg = "%s: len(matches) == %s" % (prefix, len(patterns))
-    assert len(matches) == len(patterns), msg
+    try:
+        assert len(matches) == len(patterns), msg
+    except AssertionError as e:
+        debuggery = True
+        raise e
     for k in range(len(patterns)):
         match = matches[k]
         pattern_name = pattern_names[k]
