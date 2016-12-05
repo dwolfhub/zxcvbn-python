@@ -292,7 +292,7 @@ def test_spatial_matching():
         assert matching.spatial_match(password) == [], msg
 
     # for testing, make a subgraph that contains a single keyboard
-    _graphs = {'qwerty': adjacency_graphs.qwerty}
+    _graphs = {'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty']}
     pattern = '6tfGHJ'
     matches = matching.spatial_match("rz!#{pattern}%z", _graphs)
     msg = "matches against spatial patterns surrounded by non-spatial patterns"
@@ -389,7 +389,7 @@ def test_repeat_matching():
     prefixes = ['@', 'y4@']
     suffixes = ['u', 'u%7']
     pattern = '&&&&&'
-    for [password, i, j] in genpws(pattern, prefixes, suffixes):
+    for password, i, j in genpws(pattern, prefixes, suffixes):
         matches = matching.repeat_match(password)
         msg = "matches embedded repeat patterns"
         check_matches(msg, matches, 'repeat', [pattern], [[i, j]],
