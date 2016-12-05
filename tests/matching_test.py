@@ -399,7 +399,7 @@ def test_repeat_matching():
         for chr in ['a', 'Z', '4', '&']:
             pattern = chr * (length + 1)
             matches = matching.repeat_match(pattern)
-            msg = "matches repeats with base character '#{chr}'"
+            msg = "matches repeats with base character '%s'" % chr
             check_matches(msg, matches, 'repeat', [pattern],
                           [[0, len(pattern) - 1]],
                           {'base_token': [chr]})

@@ -89,7 +89,7 @@ def omnimatch(password):
     ]:
         match = matcher(password)
         if match:
-            matches += match
+            matches.extend(match)
 
     return sorted(matches, key=lambda x: (x['i'], x['j']))
 
@@ -280,6 +280,18 @@ def repeat_match(password):
             base_token,
             omnimatch(base_token)
         )
+        base_matches = base_analysis['sequence']
+        base_guesses = base_analysis['guesses']
+        matches.append({
+            'pattern': 'repeat',
+            'i': i,
+            'j': j,
+            'token': match.group(0),
+            'base_token': base_token,
+            'base_guesses': base_guesses,
+            'base_matches': base_matches,
+            'repeat_count': len(match.group(0)) / len(base_token),
+        })
         last_index = j + 1
 
     return matches
