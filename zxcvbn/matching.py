@@ -43,7 +43,7 @@ L33T_TABLE = {
 }
 
 REGEXEN = {
-    'recent_year': re.compile('/19\d\d|200\d|201\d/g'),
+    'recent_year': re.compile('19\d\d|200\d|201\d'),
 }
 
 DATE_MAX_YEAR = 2050
@@ -73,8 +73,6 @@ DATE_SPLITS = {
         [4, 6],  # 1991 11 11
     ],
 }
-
-SHIFTED_RX = re.compile('/[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]/')
 
 
 def omnimatch(password):
@@ -118,7 +116,7 @@ def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
                         'l33t': False,
                     })
 
-    return list(reversed(matches))
+    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
 
 
 def reverse_dictionary_match(password,
@@ -251,58 +249,6 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
     return matches.sort()
 
 
-def spacial_match_helper(password, graph, graph_name):
-    matches = []
-    i = 0
-    password_len = len(password)
-    while i < password_len - 1:
-        j = i + 1
-        last_direction = None
-        turns = 0
-        if graph_name in ['qwerty', 'dvorak', ] and \
-                SHIFTED_RX.match(password[i]):
-            shifted_count = 1
-        else:
-            shifted_count = 0
-
-        while True:
-            prev_char = password[j - 1]
-            found = False
-            found_direction = -1
-            cur_direction = -1
-            adjacents = graph.get(prev_char, False) or []
-            # consider growing pattern by one character if j hasn't gone over the edge.
-            if j < password_len:
-                cur_char = password[j]
-                for adj in adjacents:
-                    cur_direction += 1
-                    if adj and cur_char in adj:
-                        found = True
-                        found_direction = cur_direction
-                        if adj.index(cur_char) == 1:
-                            shifted_count += 1
-                        if last_direction != found_direction:
-                            turns += 1
-                            last_direction = found_direction
-                        break
-            if found:
-                j += 1
-            else:
-                if j - i > 2:
-                    matches.append({
-                        'pattern': 'spatial',
-                        'i': i,
-                        'j': j - 1,
-                        'token': password[i:j],
-                        'turns': turns,
-                        'shifted_count': shifted_count,
-                    })
-                i = j
-                break
-
-    return matches
-
-
 def repeat_match(password):
     matches = []
     greedy = re.compile('(.+)\1+')
@@ -343,15 +289,94 @@ def repeat_match(password):
 def spatial_match(password, _graphs=GRAPHS):
     matches = []
     for graph_name, graph in _graphs.items():
-        matches.append(spacial_match_helper(password, graph, graph_name))
+        matches.append(spatial_match_helper(password, graph, graph_name))
 
-    return matches.sort()
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
+
+
+SHIFTED_RX = re.compile('[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]')
+
+
+def spatial_match_helper(password, graph, graph_name):
+    matches = []
+    i = 0
+    while i < len(password) - 1:
+        j = i + 1
+        last_direction = None
+        turns = 0
+        if graph_name in ['qwerty', 'dvorak', ] and \
+                SHIFTED_RX.match(password[i]):
+            # initial character is shifted
+            shifted_count = 1
+        else:
+            shifted_count = 0
+
+        while True:
+            prev_char = password[j - 1]
+            found = False
+            found_direction = -1
+            cur_direction = -1
+            adjacents = graph[prev_char] or []
+            # consider growing pattern by one character if j hasn't gone
+            # over the edge.
+            if j < len(password):
+                cur_char = password[j]
+                for adj in adjacents:
+                    cur_direction += 1
+                    if adj and cur_char in adj:
+                        found = True
+                        found_direction = cur_direction
+                        if adj.index(cur_char) == 1:
+                            # index 1 in the adjacency means the key is shifted,
+                            # 0 means unshifted: A vs a, % vs 5, etc.
+                            # for example, 'q' is adjacent to the entry '2@'.
+                            # @ is shifted w/ index 1, 2 is unshifted.
+                            shifted_count += 1
+                        if last_direction != found_direction:
+                            # adding a turn is correct even in the initial case
+                            # when last_direction is null:
+                            # every spatial pattern starts with a turn.
+                            turns += 1
+                            last_direction = found_direction
+                        break
+            # if the current pattern continued, extend j and try to grow again
+            if found:
+                j += 1
+            # otherwise push the pattern discovered so far, if any...
+            else:
+                if j - i > 2:  # don't consider length 1 or 2 chains.
+                    matches.append({
+                        'pattern': 'spatial',
+                        'i': i,
+                        'j': j - 1,
+                        'token': password[i:j],
+                        'graph': graph_name,
+                        'turns': turns,
+                        'shifted_count': shifted_count,
+                    })
+                # ...and then start a new search for the rest of the password.
+                i = j
+                break
+
+    return matches
 
 
 MAX_DELTA = 5
 
 
 def sequence_match(password):
+    # Identifies sequences by looking for repeated differences in unicode codepoint.
+    # this allows skipping, such as 9753, and also matches some extended unicode sequences
+    # such as Greek and Cyrillic alphabets.
+    #
+    # for example, consider the input 'abcdb975zy'
+    #
+    # password: a   b   c   d   b    9   7   5   z   y
+    # index:    0   1   2   3   4    5   6   7   8   9
+    # delta:      1   1   1  -2  -41  -2  -2  69   1
+    #
+    # expected result:
+    # [(i, j, delta), ...] = [(0, 3, 1), (5, 7, -2), (8, 9, 1)]
     if len(password) == 1:
         return []
 
@@ -393,7 +418,8 @@ def sequence_match(password):
             continue
         j = k - 1
         update(i, j, last_delta)
-        i = last_delta = delta
+        i = j
+        last_delta = delta
     update(i, len(password) - 1, last_delta)
 
     return result
@@ -403,18 +429,18 @@ def regex_match(password, _regexen=REGEXEN):
     matches = []
     for name, regex in _regexen.items():
         rx_match = regex.match(password)
-        while rx_match:
-            token = rx_match[0]
+        if rx_match:
+            token = rx_match.group(0)
             matches.append({
                 'pattern': 'regex',
                 'token': token,
-                'i': rx_match['index'],
-                'j': rx_match['index'] + len(rx_match[0]) - 1,
+                'i': rx_match.span()[0],
+                'j': rx_match.span()[0] + len(token) - 1,
                 'regex_name': name,
                 'regex_match': rx_match,
             })
 
-    return sorted(matches)
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 def date_match(password):
