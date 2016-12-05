@@ -4,6 +4,10 @@ from zxcvbn import adjacency_graphs
 from zxcvbn import matching
 
 
+# takes a pattern and list of prefixes/suffixes
+# returns a bunch of variants of that pattern embedded
+# with each possible prefix/suffix combination, including no prefix/suffix
+# returns a list of triplets [variant, i, j] where [i,j] is the start/end of the pattern, inclusive
 def genpws(pattern, prefixes, suffixes):
     prefixes = prefixes
     suffixes = suffixes
@@ -31,11 +35,7 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
             raise Exception('unequal argument lists to check_matches')
 
     msg = "%s: len(matches) == %s" % (prefix, len(patterns))
-    try:
-        assert len(matches) == len(patterns), msg
-    except AssertionError as e:
-        debuggery = True
-        raise e
+    assert len(matches) == len(patterns), msg
     for k in range(len(patterns)):
         match = matches[k]
         pattern_name = pattern_names[k]
@@ -130,7 +130,7 @@ def test_dictionary_matching():
     prefixes = ['q', '%%']
     suffixes = ['%', 'qq']
     word = 'asdf1234&*'
-    for [password, i, j] in genpws(word, prefixes, suffixes):
+    for password, i, j in genpws(word, prefixes, suffixes):
         matches = dm(password)
         msg = "identifies words surrounded by non-words"
         check_matches(msg, matches, 'dictionary', [word], [[i, j]], {
