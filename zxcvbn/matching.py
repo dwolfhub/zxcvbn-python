@@ -250,18 +250,18 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES, _l33t_table=L
 
 def repeat_match(password):
     matches = []
-    greedy = re.compile('(.+)\1+')
-    lazy = re.compile('(.+?)\1+')
-    lazy_anchored = re.compile('^(.+?)\1+$')
+    greedy = re.compile(r'(.+)\1+')
+    lazy = re.compile(r'(.+?)\1+')
+    lazy_anchored = re.compile(r'^(.+?)\1+$')
     last_index = 0
     while last_index < len(password):
-        greedy_match = greedy.match(password)
-        lazy_match = lazy.match(password)
+        greedy_match = greedy.match(password[last_index:])
+        lazy_match = lazy.match(password[last_index:])
 
         if not greedy_match:
             break
 
-        if len(greedy_match[0][2]) > len(lazy_match[0][2]):
+        if len(greedy_match.group(0)) > len(lazy_match.group(0)):
             # greedy beats lazy for 'aabaab'
             #   greedy: [aabaab, aab]
             #   lazy:   [aa,     a]
@@ -270,12 +270,12 @@ def repeat_match(password):
             # aabaab in aabaabaabaab.
             # run an anchored lazy match on greedy's repeated string
             # to find the shortest repeated string
-            base_token = lazy_anchored.finditer(match[0][2])[1]
+            base_token = lazy_anchored.match(match.group(1)).group(0)
         else:
             match = lazy_match
-            base_token = match[0][3]
+            base_token = match.group(1)
 
-        i, j = match[0][0], match[0][1]
+        i, j = match.span()[0], match.span()[1]
         base_analysis = most_guessable_match_sequence(
             base_token,
             omnimatch(base_token)
@@ -288,7 +288,7 @@ def repeat_match(password):
 def spatial_match(password, _graphs=GRAPHS):
     matches = []
     for graph_name, graph in _graphs.items():
-        matches.append(spatial_match_helper(password, graph, graph_name))
+        matches.extend(spatial_match_helper(password, graph, graph_name))
 
     return sorted(matches, key=lambda x: (x['i'], x['j']))
 
@@ -315,7 +315,10 @@ def spatial_match_helper(password, graph, graph_name):
             found = False
             found_direction = -1
             cur_direction = -1
-            adjacents = graph[prev_char] or []
+            try:
+                adjacents = graph[prev_char] or []
+            except KeyError:
+                adjacents = []
             # consider growing pattern by one character if j hasn't gone
             # over the edge.
             if j < len(password):
