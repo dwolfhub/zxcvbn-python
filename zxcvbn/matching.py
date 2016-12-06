@@ -75,6 +75,7 @@ DATE_SPLITS = {
 }
 
 
+# omnimatch -- combine everything
 def omnimatch(password):
     matches = []
     for matcher in [
@@ -87,13 +88,12 @@ def omnimatch(password):
         regex_match,
         date_match,
     ]:
-        match = matcher(password)
-        if match:
-            matches.extend(match)
+        matches.extend(matcher(password))
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
 
 
+# dictionary match (common passwords, english, last names, etc)
 def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     matches = []
     length = len(password)
@@ -129,7 +129,7 @@ def reverse_dictionary_match(password,
         match['i'], match['j'] = len(password) - 1 - match['j'], \
                                  len(password) - 1 - match['i']
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
 
 
 def set_user_input_dictionary(ordered_list):
@@ -138,7 +138,7 @@ def set_user_input_dictionary(ordered_list):
 
 def relevant_l33t_subtable(password, table):
     password_chars = {}
-    for char in password.split():
+    for char in list(password):
         password_chars[char] = True
 
     subtable = {}
@@ -215,39 +215,41 @@ def translate(string, chr_map):
     return ''.join(chars)
 
 
-def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES, _l33t_table=L33T_TABLE):
+def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
+               _l33t_table=L33T_TABLE):
     matches = []
 
     for sub in enumerate_l33t_subs(
             relevant_l33t_subtable(password, _l33t_table)):
-        if not bool(sub):
+        if not len(sub):
             break
 
         subbed_password = translate(password, sub)
         for match in dictionary_match(subbed_password, _ranked_dictionaries):
-            token = password[match['i']:match['j']]
+            token = password[match['i']:match['j'] + 1]
             if token.lower() == match['matched_word']:
                 # only return the matches that contain an actual substitution
                 continue
 
             # subset of mappings in sub that are in use for this match
             match_sub = {}
-            for subbed_chr, chr in sub:
-                if token in subbed_chr:
+            for subbed_chr, chr in sub.items():
+                if subbed_chr in token:
                     match_sub[subbed_chr] = chr
             match['l33t'] = True
             match['token'] = token
             match['sub'] = match_sub
             match['sub_display'] = ', '.join(
-                ["%s -> %s" % (k, v) for k, v in match_sub]
+                ["%s -> %s" % (k, v) for k, v in match_sub.items()]
             )
             matches.append(match)
 
     matches = [match for match in matches if len(match['token']) > 1]
 
-    return matches.sort()
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
+# repeats (aaa, abcabcabc) and sequences (abcdef)
 def repeat_match(password):
     matches = []
     greedy = re.compile(r'(.+)\1+')
@@ -302,7 +304,7 @@ def spatial_match(password, _graphs=GRAPHS):
     for graph_name, graph in _graphs.items():
         matches.extend(spatial_match_helper(password, graph, graph_name))
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
 
 
 SHIFTED_RX = re.compile('[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]')
@@ -454,7 +456,7 @@ def regex_match(password, _regexen=REGEXEN):
                 'regex_match': rx_match,
             })
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
 
 
 def date_match(password):
@@ -566,7 +568,8 @@ def date_match(password):
         for other_match in matches:
             if match == other_match:
                 continue
-            if other_match['i'] <= match['i'] and other_match['j'] >= match['j']:
+            if other_match['i'] <= match['i'] and other_match['j'] >= match[
+                'j']:
                 is_submatch = True
                 break
         return not is_submatch
