@@ -43,7 +43,7 @@ L33T_TABLE = {
 }
 
 REGEXEN = {
-    'recent_year': re.compile('19\d\d|200\d|201\d'),
+    'recent_year': re.compile(r'19\d\d|200\d|201\d'),
 }
 
 DATE_MAX_YEAR = 2050
@@ -182,8 +182,9 @@ def enumerate_l33t_subs(table):
                         dup_l33t_index = i
                         break
                 if dup_l33t_index == -1:
-                    sub.append([l33t_chr, first_key])
-                    next_subs.append(sub)
+                    sub_extension = sub.copy()
+                    sub_extension.append([l33t_chr, first_key])
+                    next_subs.append(sub_extension)
                 else:
                     sub_alternative = sub
                     sub_alternative.pop(dup_l33t_index)
@@ -198,7 +199,7 @@ def enumerate_l33t_subs(table):
     sub_dicts = []  # convert from assoc lists to dicts
     for sub in subs:
         sub_dict = {}
-        for l33t_chr, chr in list(sub):
+        for l33t_chr, chr in sub:
             sub_dict[l33t_chr] = chr
         sub_dicts.append(sub_dict)
     return sub_dicts
@@ -307,7 +308,7 @@ def spatial_match(password, _graphs=GRAPHS):
     return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
 
 
-SHIFTED_RX = re.compile('[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]')
+SHIFTED_RX = re.compile(r'[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]')
 
 
 def spatial_match_helper(password, graph, graph_name):
@@ -400,13 +401,13 @@ def sequence_match(password):
         if j - 1 > 1 or delta and abs(delta) == 1:
             if 0 < abs(delta) <= MAX_DELTA:
                 token = password[i:j + 1]
-                if re.compile('^[a-z]+$').match(token):
+                if re.compile(r'^[a-z]+$').match(token):
                     sequence_name = 'lower'
                     sequence_space = 26
-                elif re.compile('^[A-Z]+$').match(token):
+                elif re.compile(r'^[A-Z]+$').match(token):
                     sequence_name = 'upper'
                     sequence_space = 26
-                elif re.compile('^\d+$').match(token):
+                elif re.compile(r'^\d+$').match(token):
                     sequence_name = 'digits'
                     sequence_space = 10
                 else:
@@ -479,9 +480,9 @@ def date_match(password):
     # this uses a ^...$ regex against every substring of the password -- less performant but leads
     # to every possible date match.
     matches = []
-    maybe_date_no_separator = re.compile('^\d{4,8}$')
+    maybe_date_no_separator = re.compile(r'^\d{4,8}$')
     maybe_date_with_separator = re.compile(
-        '^(\d{1,4})([\s/\_.-])(\d{1,2})\2(\d{1,4})$'
+        r'^(\d{1,4})([\s/\_.-])(\d{1,2})\2(\d{1,4})$'
     )
 
     # dates without separators are between length 4 '1191' and 8 '11111991'
