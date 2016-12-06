@@ -484,6 +484,7 @@ def date_match(password):
         '^(\d{1,4})([\s/\_.-])(\d{1,2})\2(\d{1,4})$'
     )
 
+    # dates without separators are between length 4 '1191' and 8 '11111991'
     for i in range(len(password) - 3):
         for j in range(i + 3, i + 8):
             if j >= len(password):
@@ -503,16 +504,16 @@ def date_match(password):
                     candidates.append(dmy)
             if not len(candidates) > 0:
                 continue
-            # at this point: different possible dmy mappings for the same i,j substring.
-            # match the candidate date that likely takes the fewest guesses: a year closest to 2000.
-            # (scoring.REFERENCE_YEAR).
+            # at this point: different possible dmy mappings for the same i,j
+            # substring. match the candidate date that likely takes the fewest
+            # guesses: a year closest to 2000. (scoring.REFERENCE_YEAR).
             #
             # ie, considering '111504', prefer 11-15-04 to 1-1-1504
             # (interpreting '04' as 2004)
             best_candidate = candidates[0]
 
-            def metric(candidate):
-                return abs(candidate['year'] - scoring.REFERENCE_YEAR)
+            def metric(candidate_):
+                return abs(candidate_['year'] - scoring.REFERENCE_YEAR)
 
             min_distance = metric(candidates[0])
             for candidate in candidates[1:]:
@@ -530,6 +531,7 @@ def date_match(password):
                 'day': best_candidate['day'],
             })
 
+    # dates with separators are between length 6 '1/1/91' and 10 '11/11/1991'
     for i in range(len(password) - 5):
         for j in range(i + 5, i + 10):
             if j >= len(password):
@@ -539,9 +541,9 @@ def date_match(password):
             if not rx_match:
                 continue
             dmy = map_ints_to_dmy([
-                int(rx_match[1]),
-                int(rx_match[3]),
-                int(rx_match[4]),
+                int(rx_match.group(1)),
+                int(rx_match.group(3)),
+                int(rx_match.group(4)),
             ])
             if not dmy:
                 continue
@@ -550,36 +552,38 @@ def date_match(password):
                 'token': token,
                 'i': i,
                 'j': j,
-                'separator': rx_match[2],
+                'separator': rx_match.group(2),
                 'year': dmy['year'],
                 'month': dmy['month'],
                 'day': dmy['day'],
             })
 
-    # matches now contains all valid date strings in a way that is tricky to capture
-    # with regexes only. while thorough, it will contain some unintuitive noise:
+    # matches now contains all valid date strings in a way that is tricky to
+    # capture with regexes only. while thorough, it will contain some
+    # unintuitive noise:
     #
     # '2015_06_04', in addition to matching 2015_06_04, will also contain
-    # 5(!) other date matches: 15_06_04, 5_06_04, ..., even 2015 (matched as 5/1/2020)
+    # 5(!) other date matches: 15_06_04, 5_06_04, ..., even 2015
+    # (matched as 5/1/2020)
     #
     # to reduce noise, remove date matches that are strict substrings of others
     def filter_fun(match):
         is_submatch = False
-        for other_match in matches:
-            if match == other_match:
+        for other in matches:
+            if match == other:
                 continue
-            if other_match['i'] <= match['i'] and other_match['j'] >= match[
-                'j']:
+            if other['i'] <= match['i'] and other['j'] >= match['j']:
                 is_submatch = True
                 break
         return not is_submatch
 
-    return filter(filter_fun, matches)
+    return sorted(filter(filter_fun, matches), key=lambda x: (x['i'], x['j']))
 
 
 def map_ints_to_dmy(ints):
     # given a 3-tuple, discard if:
-    #   middle int is over 31 (for all dmy formats, years are never allowed in the middle)
+    #   middle int is over 31 (for all dmy formats, years are never allowed in
+    #   the middle)
     #   middle int is zero
     #   any int is over the max allowable year
     #   any int is over two digits but under the min allowable year
@@ -622,6 +626,9 @@ def map_ints_to_dmy(ints):
                 # when the remaining ints don't match to a day and month,
                 # it is not a date.
                 return
+
+    # given no four-digit year, two digit years are the most flexible int to
+    # match, so try to parse a day-month out of ints[0..1] or ints[1..0]
     for y, rest in possible_four_digit_splits:
         dm = map_ints_to_dm(rest)
         if dm:
@@ -634,11 +641,8 @@ def map_ints_to_dmy(ints):
 
 
 def map_ints_to_dm(ints):
-    ref = [ints, reversed(ints)]
-    for i in range(len(ref)):
-        d = ref[i][0]
-        m = ref[i][1]
-        if (1 <= d <= 31) and (1 <= m <= 12):
+    for d, m in [ints, reversed(ints)]:
+        if 1 <= d <= 31 and 1 <= m <= 12:
             return {
                 'day': d,
                 'month': m,
@@ -649,6 +653,8 @@ def two_to_four_digit_year(year):
     if year > 99:
         return year
     elif year > 50:
+        # 87 -> 1987
         return year + 1900
     else:
+        # 15 -> 2015
         return year + 2000
