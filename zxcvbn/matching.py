@@ -116,7 +116,7 @@ def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
                         'l33t': False,
                     })
 
-    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 def reverse_dictionary_match(password,

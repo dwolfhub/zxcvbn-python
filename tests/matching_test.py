@@ -42,14 +42,16 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
         pattern_name = pattern_names[k]
         pattern = patterns[k]
         i, j = ijs[k]
-        msg = "%s: matches[%s].pattern == '%s'" % (prefix, k, pattern_name)
+        msg = "%s: matches[%s]['pattern'] == '%s'" % (prefix, k, pattern_name)
         assert match['pattern'] == pattern_name, msg
+
         msg = "%s: matches[%s] should have [i, j] of [%s, %s]" % (
             prefix, k, i, j)
-
         assert [match['i'], match['j']] == [i, j], msg
-        msg = "%s: matches[%s].token == '%s'" % (prefix, k, pattern)
+
+        msg = "%s: matches[%s]['token'] == '%s'" % (prefix, k, pattern)
         assert match['token'] == pattern, msg
+
         for prop_name, prop_list in props.items():
             prop_msg = prop_list[k]
             if isinstance(prop_msg, str):
