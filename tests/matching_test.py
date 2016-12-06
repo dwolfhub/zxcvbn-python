@@ -7,7 +7,8 @@ from zxcvbn import matching
 # takes a pattern and list of prefixes/suffixes
 # returns a bunch of variants of that pattern embedded
 # with each possible prefix/suffix combination, including no prefix/suffix
-# returns a list of triplets [variant, i, j] where [i,j] is the start/end of the pattern, inclusive
+# returns a list of triplets [variant, i, j] where [i,j] is the start/end of the
+# pattern, inclusive
 def genpws(pattern, prefixes, suffixes):
     prefixes = prefixes
     suffixes = suffixes
@@ -175,7 +176,7 @@ def test_dictionary_matching():
                   })
 
 
-def reverse_dictionary_matching():
+def test_reverse_dictionary_matching():
     test_dicts = {
         'd1': {
             '123': 1,
@@ -196,7 +197,7 @@ def reverse_dictionary_matching():
                   })
 
 
-def l33t_matching():
+def test_l33t_matching():
     test_table = {
         'a': ['4', '@'],
         'c': ['(', '{', '[', '<'],
@@ -451,9 +452,9 @@ def test_regex_matching():
         )
 
 
-def date_matching():
+def test_date_matching():
     for sep in ['', ' ', '-', '/', '\\', '_', '.']:
-        password = "13%s2%s1921" % sep, sep
+        password = "13%s2%s1921" % (sep, sep)
         matches = matching.date_match(password)
         msg = "matches dates that use '%s' as a separator" % sep
         check_matches(msg, matches, 'date', [password],
