@@ -198,9 +198,10 @@ def enumerate_l33t_subs(table):
     sub_dicts = []  # convert from assoc lists to dicts
     for sub in subs:
         sub_dict = {}
-        for l33t_chr, chr in list(sub):
+        for l33t_chr, chr in sub:
             sub_dict[l33t_chr] = chr
         sub_dicts.append(sub_dict)
+
     return sub_dicts
 
 
