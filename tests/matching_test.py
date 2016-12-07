@@ -98,7 +98,7 @@ def test_dictionary_matching():
             '8': 2,
             '99': 3,
             '$': 4,
-            'asdf1234&': 5,
+            'asdf1234&*': 5,
         }
     }
 
@@ -166,7 +166,7 @@ def test_dictionary_matching():
         'dictionary_name': ['us_tv_and_film'],
     })
 
-    matching.set_user_input_dictionary('foo', 'bar')
+    matching.set_user_input_dictionary(['foo', 'bar'])
     matches = matching.dictionary_match('foobar')
     matches = [match for match in matches
                if match['dictionary_name'] == 'user_inputs']
