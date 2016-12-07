@@ -42,14 +42,16 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
         pattern_name = pattern_names[k]
         pattern = patterns[k]
         i, j = ijs[k]
-        msg = "%s: matches[%s].pattern == '%s'" % (prefix, k, pattern_name)
+        msg = "%s: matches[%s]['pattern'] == '%s'" % (prefix, k, pattern_name)
         assert match['pattern'] == pattern_name, msg
+
         msg = "%s: matches[%s] should have [i, j] of [%s, %s]" % (
             prefix, k, i, j)
-
         assert [match['i'], match['j']] == [i, j], msg
-        msg = "%s: matches[%s].token == '%s'" % (prefix, k, pattern)
+
+        msg = "%s: matches[%s]['token'] == '%s'" % (prefix, k, pattern)
         assert match['token'] == pattern, msg
+
         for prop_name, prop_list in props.items():
             prop_msg = prop_list[k]
             if isinstance(prop_msg, str):
@@ -96,7 +98,7 @@ def test_dictionary_matching():
             '8': 2,
             '99': 3,
             '$': 4,
-            'asdf1234&': 5,
+            'asdf1234&*': 5,
         }
     }
 
@@ -164,7 +166,7 @@ def test_dictionary_matching():
         'dictionary_name': ['us_tv_and_film'],
     })
 
-    matching.set_user_input_dictionary('foo', 'bar')
+    matching.set_user_input_dictionary(['foo', 'bar'])
     matches = matching.dictionary_match('foobar')
     matches = [match for match in matches
                if match['dictionary_name'] == 'user_inputs']
