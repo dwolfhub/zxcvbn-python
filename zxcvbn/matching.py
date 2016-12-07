@@ -311,7 +311,7 @@ def spatial_match(password, _graphs=GRAPHS):
     for graph_name, graph in _graphs.items():
         matches.extend(spatial_match_helper(password, graph, graph_name))
 
-    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 SHIFTED_RX = re.compile(r'[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]')
@@ -325,7 +325,7 @@ def spatial_match_helper(password, graph, graph_name):
         last_direction = None
         turns = 0
         if graph_name in ['qwerty', 'dvorak', ] and \
-                SHIFTED_RX.match(password[i]):
+                SHIFTED_RX.search(password[i]):
             # initial character is shifted
             shifted_count = 1
         else:

@@ -297,7 +297,7 @@ def test_spatial_matching():
     # for testing, make a subgraph that contains a single keyboard
     _graphs = {'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty']}
     pattern = '6tfGHJ'
-    matches = matching.spatial_match("rz!#{pattern}%z", _graphs)
+    matches = matching.spatial_match("rz!%s%%z" % pattern, _graphs)
     msg = "matches against spatial patterns surrounded by non-spatial patterns"
     check_matches(msg, matches, 'spatial', [pattern],
                   [[3, 3 + len(pattern) - 1]],
@@ -323,9 +323,9 @@ def test_spatial_matching():
         ['aoEP%yIxkjq:', 'dvorak', 4, 5],
         [';qoaOQ:Aoq;a', 'dvorak', 11, 4],
     ]:
-        _graphs = {'keyboard': adjacency_graphs[keyboard]}
+        _graphs = {keyboard: adjacency_graphs.ADJACENCY_GRAPHS[keyboard]}
         matches = matching.spatial_match(pattern, _graphs)
-        msg = "matches '#{pattern}' as a #{keyboard} pattern"
+        msg = "matches '%s' as a %s pattern" % (pattern, keyboard)
         check_matches(msg, matches, 'spatial', [pattern],
                       [[0, len(pattern) - 1]],
                       {
