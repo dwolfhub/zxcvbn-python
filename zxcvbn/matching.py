@@ -90,7 +90,7 @@ def omnimatch(password):
     ]:
         matches.extend(matcher(password))
 
-    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 # dictionary match (common passwords, english, last names, etc)
@@ -129,7 +129,7 @@ def reverse_dictionary_match(password,
         match['i'], match['j'] = len(password) - 1 - match['j'], \
                                  len(password) - 1 - match['i']
 
-    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 def set_user_input_dictionary(ordered_list):
@@ -279,10 +279,7 @@ def repeat_match(password):
             match = lazy_match
             base_token = match.group(1)
 
-        i, j = match.span()
-
-        # todo fix rest of omnimatch functions first
-        return
+        i, j = match.span()[0], match.span()[1] - 1
 
         # recursively match and score the base string
         base_analysis = most_guessable_match_sequence(
@@ -463,7 +460,7 @@ def regex_match(password, _regexen=REGEXEN):
                 'regex_match': rx_match,
             })
 
-    return list(sorted(matches, key=lambda x: (x['i'], x['j'])))
+    return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
 def date_match(password):
