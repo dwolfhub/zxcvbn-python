@@ -278,7 +278,7 @@ def repeat_match(password):
             match = lazy_match
             base_token = match.group(1)
 
-        i, j = match.span()[0], match.span()[1]
+        i, j = match.span()[0], match.span()[1] - 1
         base_analysis = most_guessable_match_sequence(
             base_token,
             omnimatch(base_token)
