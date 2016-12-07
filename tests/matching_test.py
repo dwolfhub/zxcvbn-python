@@ -470,7 +470,7 @@ def test_date_matching():
 
     for order in ['mdy', 'dmy', 'ymd', 'ydm']:
         d, m, y = 8, 8, 88
-        password = order.replace('y', y).replace('m', m).replace('d', d)
+        password = order.replace('y', str(y)).replace('m', str(m)).replace('d', str(d))
         matches = matching.date_match(password)
         msg = "matches dates with '%s' format" % order
         check_matches(msg, matches, 'date', [password],

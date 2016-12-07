@@ -259,8 +259,8 @@ def repeat_match(password):
     lazy_anchored = re.compile(r'^(.+?)\1+$')
     last_index = 0
     while last_index < len(password):
-        greedy_match = greedy.match(password[last_index:])
-        lazy_match = lazy.match(password[last_index:])
+        greedy_match = greedy.search(password[last_index:])
+        lazy_match = lazy.search(password[last_index:])
 
         if not greedy_match:
             break
@@ -274,12 +274,17 @@ def repeat_match(password):
             # aabaab in aabaabaabaab.
             # run an anchored lazy match on greedy's repeated string
             # to find the shortest repeated string
-            base_token = lazy_anchored.match(match.group(1)).group(0)
+            base_token = lazy_anchored.search(match.group(0)).group(1)
         else:
             match = lazy_match
             base_token = match.group(1)
 
-        i, j = match.span()[0], match.span()[1] - 1
+        i, j = match.span()
+
+        # todo fix rest of omnimatch functions first
+        return
+
+        # recursively match and score the base string
         base_analysis = most_guessable_match_sequence(
             base_token,
             omnimatch(base_token)
@@ -483,7 +488,7 @@ def date_match(password):
     matches = []
     maybe_date_no_separator = re.compile(r'^\d{4,8}$')
     maybe_date_with_separator = re.compile(
-        r'^(\d{1,4})([\s/\_.-])(\d{1,2})\2(\d{1,4})$'
+        r'^(\d{1,4})([\s/\\_.-])(\d{1,2})\2(\d{1,4})$'
     )
 
     # dates without separators are between length 4 '1191' and 8 '11111991'
