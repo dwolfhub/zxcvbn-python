@@ -7,9 +7,10 @@ from .adjacency_graphs import ADJACENCY_GRAPHS
 
 def calc_average_degree(graph):
     average = 0
+
     for key, neighbors in graph.items():
         average += len([n for n in neighbors if n])
-    average /= len([k for k, v in graph.items()])
+    average /= float(len(graph.items()))
 
     return average
 

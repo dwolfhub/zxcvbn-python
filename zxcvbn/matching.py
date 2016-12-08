@@ -182,7 +182,7 @@ def enumerate_l33t_subs(table):
                         dup_l33t_index = i
                         break
                 if dup_l33t_index == -1:
-                    sub_extension = sub.copy()
+                    sub_extension = list(sub)
                     sub_extension.append([l33t_chr, first_key])
                     next_subs.append(sub_extension)
                 else:
