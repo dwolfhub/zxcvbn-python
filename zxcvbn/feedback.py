@@ -23,7 +23,7 @@ def get_feedback(score, sequence):
 
     longest_match = sequence[0]
     for match in sequence[1:]:
-        if len(match['token']) > len(longest_match['match']['token']):
+        if len(match['token']) > len(longest_match['token']):
             longest_match = match
 
     feedback = get_match_feedback(longest_match, len(sequence) == 1)
@@ -94,6 +94,7 @@ def get_match_feedback(match, is_sole_match):
 
 
 def get_dictionary_match_feedback(match, is_sole_match):
+    warning = ''
     if match['dictionary_name'] == 'passwords':
         if is_sole_match and not match.get('l33t', False) and not \
                 match['reversed']:
@@ -119,9 +120,9 @@ def get_dictionary_match_feedback(match, is_sole_match):
 
     suggestions = []
     word = match['token']
-    if START_UPPER.match(word):
+    if START_UPPER.search(word):
         suggestions.append("Capitalization doesn't help very much")
-    elif ALL_UPPER.match(word) and word.lower() != word:
+    elif ALL_UPPER.search(word) and word.lower() != word:
         suggestions.append("All-uppercase is almost as easy to guess as "
                            "all-lowercase")
 

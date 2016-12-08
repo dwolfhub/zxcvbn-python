@@ -2,3 +2,4 @@ env*
 venv*
 .cache
 *.pyc
+dist
