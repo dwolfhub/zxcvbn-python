@@ -259,8 +259,8 @@ def repeat_match(password):
     lazy_anchored = re.compile(r'^(.+?)\1+$')
     last_index = 0
     while last_index < len(password):
-        greedy_match = greedy.search(password[last_index:])
-        lazy_match = lazy.search(password[last_index:])
+        greedy_match = greedy.search(password, pos=last_index)
+        lazy_match = lazy.search(password, pos=last_index)
 
         if not greedy_match:
             break

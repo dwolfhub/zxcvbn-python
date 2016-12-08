@@ -390,7 +390,7 @@ def test_uppercase_variants():
         assert scoring.uppercase_variations({'token': word}) == variants, msg
 
 
-def test_l33t_variations():
+def test_l33t_variants():
     match = {
         'l33t': False
     }
