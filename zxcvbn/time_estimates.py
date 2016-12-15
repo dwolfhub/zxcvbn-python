@@ -1,6 +1,6 @@
 def estimate_attack_times(guesses):
     crack_times_seconds = {
-        'online_throttling_100_per_hour': float(guesses) / 100.0 / 3600.0,
+        'online_throttling_100_per_hour': float(guesses) / (100.0 / 3600.0),
         'online_no_throttling_10_per_second': float(guesses) / 10.0,
         'offline_slow_hashing_1e4_per_second': float(guesses) / float(1e4),
         'offline_fast_hashing_1e10_per_second': float(guesses) / float(1e10),
@@ -50,8 +50,11 @@ def display_time(seconds):
     century = year * 100
     if seconds < 1:
         display_num, display_str = None, 'less than a second'
+    elif seconds < minute:
+        base = round(seconds)
+        display_num, display_str = base, '%s second' % base
     elif seconds < hour:
-        base = round(seconds, minute)
+        base = round(seconds / minute)
         display_num, display_str = base, '%s minute' % base
     elif seconds < day:
         base = round(seconds / hour)

@@ -25,61 +25,60 @@ Output:
 
 ```
 {
-    'crack_times_seconds': {
-        'online_no_throttling_10_per_second': 1500.0, 
-        'online_throttling_100_per_hour': 0.041666666666666664, 
-        'offline_fast_hashing_1e10_per_second': 1.5e-06, 
-        'offline_slow_hashing_1e4_per_second': 1.5
-    }, 
-    'guesses': 15000, 
+    'password': 'JohnSmith123', 
+    'score': 2, 
+    'guesses': 2567800, 
+    'guesses_log10': 14.75856005913912, 
+    'calc_time': datetime.timedelta(0, 0, 3519), 
     'feedback': {
-        'warning': '', 
         'suggestions': [
             'Add another word or two. Uncommon words are better.', 
             "Capitalization doesn't help very much"
-        ]}, 
-        'guesses_log10': 9.615805480084347, 
-        'sequence': [
-            {
-                'guesses': 50, 
-                'guesses_log10': 3.912023005428146, 
-                'l33t_variations': 1, 
-                'reversed': False, 
-                'rank': 1, 
-                'uppercase_variations': 2, 
-                'dictionary_name': 'user_inputs', 
-                'matched_word': 'john', 
-                'base_guesses': 1, 
-                'i': 0, 
-                'pattern': 'dictionary', 
-                'j': 3, 
-                'l33t': False, 
-                'token': 'John'
-            }, {
-                'guesses': 50, 
-                'guesses_log10': 3.912023005428146, 
-                'l33t_variations': 1, 
-                'reversed': False, 
-                'rank': 2, 
-                'uppercase_variations': 2, 
-                'dictionary_name': 'user_inputs', 
-                'matched_word': 'smith', 
-                'base_guesses': 2, 
-                'i': 4, 
-                'pattern': 'dictionary', 
-                'j': 8, 
-                'l33t': False, 
-                'token': 'Smith'
-            }
         ], 
-        'crack_times_display': {
-            'online_throttling_100_per_hour': 'less than a second', 
-            'online_no_throttling_10_per_second': '1500.0 minutes', 
-            'offline_fast_hashing_1e10_per_second': 'less than a second', 
-            'offline_slow_hashing_1e4_per_second': '1.5 minutes'
-        }, 
-        'score': 1, 
-        'password': 'JohnSmith', 
-        'calc_time': datetime.timedelta(0, 0, 4143)
-    }
+        'warning': ''
+    }, 
+    'crack_times_display': {
+        'offline_fast_hashing_1e10_per_second': 'less than a second',
+        'online_no_throttling_10_per_second': '3 days', 
+        'online_throttling_100_per_hour': '3 years', 
+        'offline_slow_hashing_1e4_per_second': '4 minutes', 
+    }, 
+    'crack_times_seconds': {
+        'offline_fast_hashing_1e10_per_second': 0.00025678, 
+        'offline_slow_hashing_1e4_per_second': 256.78, 
+        'online_no_throttling_10_per_second': 256780.0, 
+        'online_throttling_100_per_hour': 92440800.0
+    }, 
+    'sequence': [{
+        'guesses_log10': 3.912023005428146, 
+        'base_guesses': 1, 
+        'rank': 1, 
+        'guesses': 50, 
+        'l33t': False, 
+        'uppercase_variations': 2, 
+        'matched_word': 'john', 
+        'j': 3, 
+        'pattern': 'dictionary', 
+        'reversed': False, 
+        'i': 0, 
+        'token': 'John', 
+        'l33t_variations': 1, 
+        'dictionary_name': 'user_inputs'
+    }, {
+        'guesses_log10': 10.149487885993265, 
+        'base_guesses': 12789, 
+        'rank': 12789, 
+        'guesses': 25578, 
+        'l33t': False, 
+        'uppercase_variations': 2, 
+        'matched_word': 'smith123', 
+        'j': 11, 
+        'pattern': 'dictionary', 
+        'reversed': False, 
+        'i': 4, 
+        'token': 'Smith123', 
+        'l33t_variations': 1, 
+        'dictionary_name': 'passwords'
+    }]
+}
 ```
