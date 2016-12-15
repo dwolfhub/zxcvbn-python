@@ -39,15 +39,15 @@ Output:
     }, 
     'crack_times_display': {
         'offline_fast_hashing_1e10_per_second': 'less than a second',
+        'offline_slow_hashing_1e4_per_second': '4 minutes', 
         'online_no_throttling_10_per_second': '3 days', 
         'online_throttling_100_per_hour': '3 years', 
-        'offline_slow_hashing_1e4_per_second': '4 minutes', 
     }, 
     'crack_times_seconds': {
         'offline_fast_hashing_1e10_per_second': 0.00025678, 
         'offline_slow_hashing_1e4_per_second': 256.78, 
         'online_no_throttling_10_per_second': 256780.0, 
-        'online_throttling_100_per_hour': 92440800.0
+        'online_throttling_100_per_hour': 92440800.0,
     }, 
     'sequence': [{
         'guesses_log10': 3.912023005428146, 
