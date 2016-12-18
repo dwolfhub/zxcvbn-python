@@ -2,10 +2,10 @@ from distutils.core import setup
 
 setup(
     name='zxcvbn-python',
-    version='4.4.6',
+    version='4.4.7',
     packages=['zxcvbn'],
     url='https://github.com/dwolfhub/zxcvbn-python',
-    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/4.4.6',
+    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/4.4.7',
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
