@@ -314,8 +314,8 @@ def regex_guesses(match):
 
 
 def date_guesses(match):
-    your_space = max(abs(match['year'] - REFERENCE_YEAR), MIN_YEAR_SPACE)
-    guesses = your_space * 365
+    year_space = max(abs(match['year'] - REFERENCE_YEAR), MIN_YEAR_SPACE)
+    guesses = year_space * 365
     if match.get('separator', False):
         guesses *= 4
 
