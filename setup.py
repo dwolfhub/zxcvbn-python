@@ -9,6 +9,7 @@ setup(
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
-    description='Python implementation of Dropbox\'s realistic password strength estimator',
+    description='Python implementation of Dropbox\'s realistic password '
+                'strength estimator, zxcvbn',
     keywords=['zxcvbn', 'password', 'security'],
 )
