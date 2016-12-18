@@ -10,4 +10,5 @@ setup(
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
     description='python port of Dropbox\'s zxcvbn library',
+    keywords=['zxcvbn', 'password', 'security'],
 )

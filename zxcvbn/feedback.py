@@ -1,19 +1,15 @@
 from zxcvbn.scoring import START_UPPER, ALL_UPPER
 
-default_feedback = {
-    'default_feedback': {
-        'warning': '',
-        'suggestions': [
-            "Use a few words, avoid common phrases",
-            "No need for symbols, digits, or uppercase letters"
-        ]
-    }
-}
-
 
 def get_feedback(score, sequence):
     if len(sequence) == 0:
-        return default_feedback
+        return {
+            'warning': '',
+            'suggestions': [
+                "Use a few words, avoid common phrases",
+                "No need for symbols, digits, or uppercase letters"
+            ]
+        }
 
     if score > 2:
         return {

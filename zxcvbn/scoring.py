@@ -124,8 +124,8 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         # first see if any competing sequences covering this prefix, with l or
         # fewer matches, fare better than this sequence. if so, skip it and
         # return.
-        for completing_l, competing_g in optimal['g'][k].items():
-            if completing_l > l:
+        for competing_l, competing_g in optimal['g'][k].items():
+            if competing_l > l:
                 continue
             if competing_g <= g:
                 return
@@ -212,7 +212,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
     return {
         'password': password,
         'guesses': guesses,
-        'guesses_log10': log(guesses),
+        'guesses_log10': log(guesses, 10),
         'sequence': optimal_match_sequence,
     }
 
@@ -246,7 +246,7 @@ def estimate_guesses(match, password):
 
 
 def bruteforce_guesses(match):
-    guesses = pow(BRUTEFORCE_CARDINALITY, len(match['token']))
+    guesses = BRUTEFORCE_CARDINALITY ** len(match['token'])
     # small detail: make bruteforce matches at minimum one guess bigger than
     # smallest allowed submatch guesses, such that non-bruteforce submatches
     # over the same [i..j] take precedence.
