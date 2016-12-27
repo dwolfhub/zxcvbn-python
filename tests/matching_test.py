@@ -10,8 +10,6 @@ from zxcvbn import matching
 # returns a list of triplets [variant, i, j] where [i,j] is the start/end of the
 # pattern, inclusive
 def genpws(pattern, prefixes, suffixes):
-    prefixes = prefixes
-    suffixes = suffixes
     for lst in [prefixes, suffixes]:
         if '' not in lst:
             lst.insert(0, '')
