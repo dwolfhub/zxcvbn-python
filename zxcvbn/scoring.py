@@ -240,7 +240,7 @@ def estimate_guesses(match, password):
 
     guesses = estimation_functions[match['pattern']](match)
     match['guesses'] = max(guesses, min_guesses)
-    match['guesses_log10'] = log(match['guesses'])
+    match['guesses_log10'] = log(match['guesses'], 10)
 
     return match['guesses']
 
