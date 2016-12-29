@@ -307,7 +307,7 @@ def regex_guesses(match):
         # conservative estimate of year space: num years from REFERENCE_YEAR.
         # if year is close to REFERENCE_YEAR, estimate a year space of
         # MIN_YEAR_SPACE.
-        year_space = abs(int(match['regex_match'][0]) - REFERENCE_YEAR)
+        year_space = abs(int(match['regex_match'].group(0)) - REFERENCE_YEAR)
         year_space = max(year_space, MIN_YEAR_SPACE)
 
         return year_space
