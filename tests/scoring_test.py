@@ -1,5 +1,4 @@
-import pytest
-
+import re
 from zxcvbn import matching
 from zxcvbn import scoring
 from zxcvbn.adjacency_graphs import ADJACENCY_GRAPHS
@@ -209,10 +208,11 @@ def test_regex_guesses():
     msg = "guesses of 62^5 for 5-char alphanumeric regex"
     assert scoring.regex_guesses(match) == (2 * 26 + 10) ** 5, msg
 
+
     match = {
         'token': '1972',
         'regex_name': 'recent_year',
-        'regex_match': ['1972'],
+        'regex_match': matching.REGEXEN['recent_year'].match('1972'),
     }
     msg = "guesses of |year - REFERENCE_YEAR| for distant year matches"
     assert scoring.regex_guesses(match) == abs(scoring.REFERENCE_YEAR - 1972), \
@@ -221,7 +221,7 @@ def test_regex_guesses():
     match ={
         'token': '2005',
         'regex_name': 'recent_year',
-        'regex_match': ['2005'],
+        'regex_match': matching.REGEXEN['recent_year'].match('2005'),
     }
     msg = "guesses of MIN_YEAR_SPACE for a year close to REFERENCE_YEAR"
     assert scoring.regex_guesses(match) == scoring.MIN_YEAR_SPACE, msg
