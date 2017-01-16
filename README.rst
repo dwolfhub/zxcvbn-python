@@ -8,7 +8,7 @@ estimator. The original library, written for JavaScript, can be found
 `here <https://github.com/dropbox/zxcvbn>`__.
 
 While there may be other Python ports available, this one is the most up
-to date and is reccommended by the original developers of zxcvbn at this
+to date and is recommended by the original developers of zxcvbn at this
 time.
 
 Tested in Python versions 2.6-2.7, 3.3-3.5
