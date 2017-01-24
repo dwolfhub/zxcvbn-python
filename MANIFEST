@@ -8,3 +8,4 @@ zxcvbn/frequency_lists.py
 zxcvbn/matching.py
 zxcvbn/scoring.py
 zxcvbn/time_estimates.py
+README.rst
