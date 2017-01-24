@@ -94,5 +94,24 @@ Output:
         }], 
     }
 
+
+Custom Ranked Dictionaries
+--------------------------
+
+In order to support more languages or just add password dictionaries of your own, there is a helper function you may use.
+
+.. code:: python
+
+    from zxcvbn.matching import add_frequency_lists
+
+    add_frequency_lists({
+        'my_list': ['foo', 'bar'],
+        'another_list': ['baz']
+    })
+
+These lists will be added to the current ones, but you can also overwrite the current ones if you wish.
+The lists you add should be in order of how common the word is used.
+
+
 .. |Build Status| image:: https://travis-ci.org/dwolfhub/zxcvbn-python.svg?branch=master
    :target: https://travis-ci.org/dwolfhub/zxcvbn-python
