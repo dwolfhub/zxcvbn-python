@@ -17,8 +17,14 @@ def build_ranked_dict(ordered_list):
 
 
 RANKED_DICTIONARIES = {}
-for name, lst in FREQUENCY_LISTS.items():
-    RANKED_DICTIONARIES[name] = build_ranked_dict(lst)
+
+
+def add_frequency_lists(frequency_lists_):
+    for name, lst in frequency_lists_.items():
+        RANKED_DICTIONARIES[name] = build_ranked_dict(lst)
+
+
+add_frequency_lists(FREQUENCY_LISTS)
 
 GRAPHS = {
     'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty'],
