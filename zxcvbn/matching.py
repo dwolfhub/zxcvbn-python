@@ -75,7 +75,7 @@ DATE_SPLITS = {
 }
 
 
-# omnimatch -- combine everything
+# omnimatch -- perform all matches
 def omnimatch(password):
     matches = []
     for matcher in [

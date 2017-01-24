@@ -3,7 +3,10 @@ from datetime import datetime
 from . import matching, scoring, time_estimates, feedback
 
 
-def zxcvbn(password, user_inputs=[]):
+def zxcvbn(password, user_inputs=None):
+    if user_inputs is None:
+        user_inputs = []
+
     start = datetime.now()
 
     sanitized_inputs = [str(arg).lower() for arg in user_inputs]
