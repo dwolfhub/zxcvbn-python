@@ -58,6 +58,27 @@ def check_matches(prefix, matches, pattern_names, patterns, ijs, props):
             assert match[prop_name] == prop_list[k], msg
 
 
+def test_build_ranked_dict():
+    rd = matching.build_ranked_dict(['a', 'b', 'c', ])
+    assert rd == {
+        'a': 1,
+        'b': 2,
+        'c': 3,
+    }
+
+
+def test_add_frequency_lists():
+    matching.add_frequency_lists({
+        'test_words': ['qidkviflkdoejjfkd', 'sjdshfidssdkdjdhfkl']
+    })
+
+    assert 'test_words' in matching.RANKED_DICTIONARIES
+    assert matching.RANKED_DICTIONARIES['test_words'] == {
+        'qidkviflkdoejjfkd': 1,
+        'sjdshfidssdkdjdhfkl': 2,
+    }
+
+
 def test_matching_utils():
     chr_map = {
         'a': 'A',
