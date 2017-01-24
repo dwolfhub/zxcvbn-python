@@ -1,5 +1,5 @@
 from zxcvbn.scoring import START_UPPER, ALL_UPPER
-from gettext import bindtextdomain, gettext as _
+from gettext import gettext as _
 
 
 def get_feedback(score, sequence):
