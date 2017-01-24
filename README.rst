@@ -11,7 +11,7 @@ While there may be other Python ports available, this one is the most up
 to date and is reccommended by the original developers of zxcvbn at this
 time.
 
-Tested in Python versions 2.6-2.7, 3.3-3.5
+Tested in Python versions 2.6-2.7, 3.3-3.6
 
 Installation
 ------------
