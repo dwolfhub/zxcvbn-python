@@ -3,15 +3,24 @@
 zxcvbn-python
 =============
 
-Python implementation of Dropbox's realistic password strength
-estimator. The original library, written for JavaScript, can be found
+A realistic password strength estimator.
+
+This is a Python implementation of the library created by the team at Dropbox.
+The original library, written for JavaScript, can be found
 `here <https://github.com/dropbox/zxcvbn>`__.
 
 While there may be other Python ports available, this one is the most up
 to date and is recommended by the original developers of zxcvbn at this
 time.
 
-Tested in Python versions 2.6-2.7, 3.3-3.6
+
+Features
+--------
+- **Tested in Python versions 2.6-2.7, 3.3-3.6**
+- Accepts user data to be added to the dictionaries that are tested against (name, birthdate, etc)
+- Gives a score to the password, from 0 (terrible) to 4 (great)
+- Provides feedback on the password and ways to improve it
+- Returns time estimates on how long it would take to guess the password in different situations
 
 Installation
 ------------
@@ -111,6 +120,18 @@ In order to support more languages or just add password dictionaries of your own
 
 These lists will be added to the current ones, but you can also overwrite the current ones if you wish.
 The lists you add should be in order of how common the word is used with the most common words appearing first.
+
+
+Contribute
+----------
+
+- Report an Issue: https://github.com/dwolfhub/zxcvbn-python/issues
+- Submit a Pull Request: https://github.com/dwolfhub/zxcvbn-python/pulls
+
+License
+-------
+
+The project is licensed under the MIT license.
 
 
 .. |Build Status| image:: https://travis-ci.org/dwolfhub/zxcvbn-python.svg?branch=master
