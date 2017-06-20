@@ -4,12 +4,24 @@ from . import matching, scoring, time_estimates, feedback
 
 
 def zxcvbn(password, user_inputs=None):
+    try:
+        # Python 2 string types
+        basestring = (str, unicode)
+    except NameError:
+        # Python 3 string types
+        basestring = (str, bytes)
+
     if user_inputs is None:
         user_inputs = []
 
     start = datetime.now()
 
-    sanitized_inputs = [str(arg).lower() for arg in user_inputs]
+    sanitized_inputs = []
+    for arg in user_inputs:
+        if not isinstance(arg, basestring):
+            arg = str(arg)
+        sanitized_inputs.append(arg.lower())
+
     matching.set_user_input_dictionary(sanitized_inputs)
 
     matches = matching.omnimatch(password)
