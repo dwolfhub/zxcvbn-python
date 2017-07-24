@@ -407,7 +407,7 @@ def sequence_match(password):
         return []
 
     def update(i, j, delta):
-        if j - 1 > 1 or delta and abs(delta) == 1:
+        if j - i > 1 or (delta and abs(delta) == 1):
             if 0 < abs(delta) <= MAX_DELTA:
                 token = password[i:j + 1]
                 if re.compile(r'^[a-z]+$').match(token):
