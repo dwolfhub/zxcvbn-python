@@ -454,14 +454,12 @@ def sequence_match(password):
 def regex_match(password, _regexen=REGEXEN):
     matches = []
     for name, regex in _regexen.items():
-        rx_match = regex.match(password)
-        if rx_match:
-            token = rx_match.group(0)
+        for rx_match in regex.finditer(password):
             matches.append({
                 'pattern': 'regex',
-                'token': token,
-                'i': rx_match.span()[0],
-                'j': rx_match.span()[0] + len(token) - 1,
+                'token': rx_match.group(0),
+                'i': rx_match.start(),
+                'j': rx_match.end()-1,
                 'regex_name': name,
                 'regex_match': rx_match,
             })
