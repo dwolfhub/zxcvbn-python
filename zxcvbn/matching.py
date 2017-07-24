@@ -438,7 +438,7 @@ def sequence_match(password):
 
     for k in range(1, len(password)):
         delta = ord(password[k]) - ord(password[k - 1])
-        if not last_delta:
+        if last_delta is None:
             last_delta = delta
         if delta == last_delta:
             continue
