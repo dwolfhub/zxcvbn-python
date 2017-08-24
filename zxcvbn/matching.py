@@ -192,7 +192,7 @@ def enumerate_l33t_subs(table):
                     sub_extension.append([l33t_chr, first_key])
                     next_subs.append(sub_extension)
                 else:
-                    sub_alternative = sub
+                    sub_alternative = list(sub)
                     sub_alternative.pop(dup_l33t_index)
                     sub_alternative.append([l33t_chr, first_key])
                     next_subs.append(sub)
@@ -407,7 +407,7 @@ def sequence_match(password):
         return []
 
     def update(i, j, delta):
-        if j - 1 > 1 or delta and abs(delta) == 1:
+        if j - i > 1 or (delta and abs(delta) == 1):
             if 0 < abs(delta) <= MAX_DELTA:
                 token = password[i:j + 1]
                 if re.compile(r'^[a-z]+$').match(token):
@@ -438,7 +438,7 @@ def sequence_match(password):
 
     for k in range(1, len(password)):
         delta = ord(password[k]) - ord(password[k - 1])
-        if not last_delta:
+        if last_delta is None:
             last_delta = delta
         if delta == last_delta:
             continue
@@ -454,14 +454,12 @@ def sequence_match(password):
 def regex_match(password, _regexen=REGEXEN):
     matches = []
     for name, regex in _regexen.items():
-        rx_match = regex.match(password)
-        if rx_match:
-            token = rx_match.group(0)
+        for rx_match in regex.finditer(password):
             matches.append({
                 'pattern': 'regex',
-                'token': token,
-                'i': rx_match.span()[0],
-                'j': rx_match.span()[0] + len(token) - 1,
+                'token': rx_match.group(0),
+                'i': rx_match.start(),
+                'j': rx_match.end()-1,
                 'regex_name': name,
                 'regex_match': rx_match,
             })

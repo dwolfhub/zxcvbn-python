@@ -140,7 +140,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
         # see if a single bruteforce match spanning the k-prefix is optimal.
         m = make_bruteforce_match(0, k)
         update(m, 1)
-        for i in range(1, k):
+        for i in range(1, k + 1):
             # generate k bruteforce matches, spanning from (i=1, j=k) up to
             # (i=k, j=k). see if adding these new matches to any of the
             # sequences in optimal[i-1] leads to new bests.
