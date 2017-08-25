@@ -185,17 +185,6 @@ def test_dictionary_matching():
         'dictionary_name': ['us_tv_and_film'],
     })
 
-    matching.set_user_input_dictionary(['foo', 'bar'])
-    matches = matching.dictionary_match('foobar')
-    matches = [match for match in matches
-               if match['dictionary_name'] == 'user_inputs']
-    msg = "matches with provided user input dictionary"
-    check_matches(msg, matches, 'dictionary', ['foo', 'bar'],
-                  [[0, 2], [3, 5]], {
-                      'matched_word': ['foo', 'bar'],
-                      'rank': [1, 2],
-                  })
-
 
 def test_reverse_dictionary_matching():
     test_dicts = {
