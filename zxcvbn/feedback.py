@@ -67,7 +67,7 @@ def get_match_feedback(match, is_sole_match):
         }
     elif match['pattern'] == 'sequence':
         return {
-            'warning': _("Sequences like abc or 6543 are easy to guess."),
+            'warning': _('Sequences like "abc" or "6543" are easy to guess.'),
             'suggestions': [
                 _('Avoid sequences.')
             ]
