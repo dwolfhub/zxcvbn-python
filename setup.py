@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name='zxcvbn-python',
-    version='4.4.17',
+    version='4.4.18',
     packages=['zxcvbn'],
     url='https://github.com/dwolfhub/zxcvbn-python',
-    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.17',
+    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.18',
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
