@@ -1,3 +1,4 @@
+README.rst
 setup.py
 zxcvbn/__init__.py
 zxcvbn/adjacency_graphs.py
@@ -6,4 +7,3 @@ zxcvbn/frequency_lists.py
 zxcvbn/matching.py
 zxcvbn/scoring.py
 zxcvbn/time_estimates.py
-README.rst

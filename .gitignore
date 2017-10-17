@@ -3,3 +3,5 @@ venv*
 .cache
 *.pyc
 dist
+build
+zxcvbn_python.egg-info
