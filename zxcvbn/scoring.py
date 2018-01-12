@@ -279,7 +279,7 @@ def sequence_guesses(match):
     if first_chr in ['a', 'A', 'z', 'Z', '0', '1', '9']:
         base_guesses = 4
     else:
-        if re.compile('\d').match(first_chr):
+        if re.compile(r'\d').match(first_chr):
             base_guesses = 10  # digits
         else:
             # could give a higher base for uppercase,
@@ -363,10 +363,10 @@ def spatial_guesses(match):
     return guesses
 
 
-START_UPPER = re.compile('^[A-Z][^A-Z]+$')
-END_UPPER = re.compile('^[^A-Z]+[A-Z]$')
-ALL_UPPER = re.compile('^[^a-z]+$')
-ALL_LOWER = re.compile('^[^A-Z]+$')
+START_UPPER = re.compile(r'^[A-Z][^A-Z]+$')
+END_UPPER = re.compile(r'^[^A-Z]+[A-Z]$')
+ALL_UPPER = re.compile(r'^[^a-z]+$')
+ALL_LOWER = re.compile(r'^[^A-Z]+$')
 
 
 def uppercase_variations(match):
