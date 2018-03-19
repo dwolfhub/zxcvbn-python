@@ -14,6 +14,11 @@ setup(
     author_email='danielrwolf5@gmail.com',
     long_description=long_description,
     keywords=['zxcvbn', 'password', 'security'],
+    entry_points={
+        'console_scripts': [
+            'zxcvbn = zxcvbn.__main__:cli'
+         ]
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
