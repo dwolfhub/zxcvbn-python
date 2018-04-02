@@ -1,5 +1,8 @@
 from setuptools import setup
 
+with open('README.rst') as file:
+    long_description = file.read()
+
 setup(
     name='zxcvbn-python',
     version='4.4.20',
@@ -9,8 +12,8 @@ setup(
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
-    description='Python implementation of Dropbox\'s realistic password '
-                'strength estimator, zxcvbn',
+    description=long_description,
+    long_description=long_description,
     keywords=['zxcvbn', 'password', 'security'],
     classifiers=[
         'Intended Audience :: Developers',
