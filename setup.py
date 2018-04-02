@@ -5,7 +5,7 @@ setup(
     version='4.4.20',
     packages=['zxcvbn'],
     url='https://github.com/dwolfhub/zxcvbn-python',
-    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.19',
+    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.20',
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
