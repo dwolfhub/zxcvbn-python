@@ -5,3 +5,4 @@ venv*
 dist
 build
 zxcvbn_python.egg-info
+.vscode

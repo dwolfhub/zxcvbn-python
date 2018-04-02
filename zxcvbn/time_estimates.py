@@ -1,9 +1,11 @@
+from decimal import Decimal
+
 def estimate_attack_times(guesses):
     crack_times_seconds = {
-        'online_throttling_100_per_hour': float(guesses) / (100.0 / 3600.0),
-        'online_no_throttling_10_per_second': float(guesses) / 10.0,
-        'offline_slow_hashing_1e4_per_second': float(guesses) / float(1e4),
-        'offline_fast_hashing_1e10_per_second': float(guesses) / float(1e10),
+        'online_throttling_100_per_hour': Decimal(guesses) / Decimal(100.0 / 3600.0),
+        'online_no_throttling_10_per_second': Decimal(guesses) / Decimal(10.0),
+        'offline_slow_hashing_1e4_per_second': Decimal(guesses) / Decimal(1e4),
+        'offline_fast_hashing_1e10_per_second': Decimal(guesses) / Decimal(1e10),
     }
 
     crack_times_display = {}
