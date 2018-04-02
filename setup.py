@@ -12,7 +12,6 @@ setup(
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
-    description=long_description,
     long_description=long_description,
     keywords=['zxcvbn', 'password', 'security'],
     classifiers=[
