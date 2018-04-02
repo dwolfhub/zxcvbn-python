@@ -1,11 +1,11 @@
-from decimal import Decimal
+from decimal import Decimal, Context, Inexact
 
 def estimate_attack_times(guesses):
     crack_times_seconds = {
-        'online_throttling_100_per_hour': Decimal(guesses) / Decimal(100.0 / 3600.0),
-        'online_no_throttling_10_per_second': Decimal(guesses) / Decimal(10.0),
-        'offline_slow_hashing_1e4_per_second': Decimal(guesses) / Decimal(1e4),
-        'offline_fast_hashing_1e10_per_second': Decimal(guesses) / Decimal(1e10),
+        'online_throttling_100_per_hour': Decimal(guesses) / float_to_decimal(100.0 / 3600.0),
+        'online_no_throttling_10_per_second': Decimal(guesses) / float_to_decimal(10.0),
+        'offline_slow_hashing_1e4_per_second': Decimal(guesses) / float_to_decimal(1e4),
+        'offline_fast_hashing_1e10_per_second': Decimal(guesses) / float_to_decimal(1e10),
     }
 
     crack_times_display = {}
@@ -77,3 +77,15 @@ def display_time(seconds):
         display_str += 's'
 
     return display_str
+
+def float_to_decimal(f):
+    "Convert a floating point number to a Decimal with no loss of information"
+    n, d = f.as_integer_ratio()
+    numerator, denominator = Decimal(n), Decimal(d)
+    ctx = Context(prec=60)
+    result = ctx.divide(numerator, denominator)
+    while ctx.flags[Inexact]:
+        ctx.flags[Inexact] = False
+        ctx.prec *= 2
+        result = ctx.divide(numerator, denominator)
+    return result
