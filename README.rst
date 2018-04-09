@@ -121,6 +121,17 @@ In order to support more languages or just add password dictionaries of your own
 These lists will be added to the current ones, but you can also overwrite the current ones if you wish.
 The lists you add should be in order of how common the word is used with the most common words appearing first.
 
+CLI
+~~~
+
+You an also use zxcvbn from the command line::
+
+    echo 'password' | zxcvbn --user-input <user-input> | jq
+
+You can also execute the zxcvbn module::
+
+    echo 'password' | python -m zxcvbn --user-input <user-input> | jq
+
 
 Contribute
 ----------
