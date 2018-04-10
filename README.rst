@@ -1,7 +1,7 @@
 |Build Status|
 
-zxcvbn-python
-=============
+zxcvbn
+======
 
 A realistic password strength estimator.
 
@@ -25,7 +25,7 @@ Features
 Installation
 ------------
 
-Install the package using pip: ``pip install zxcvbn-python``
+Install the package using pip: ``pip install zxcvbn``
 
 Usage
 -----

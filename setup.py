@@ -4,7 +4,7 @@ with open('README.rst') as file:
     long_description = file.read()
 
 setup(
-    name='zxcvbn-python',
+    name='zxcvbn',
     version='4.4.22',
     packages=['zxcvbn'],
     url='https://github.com/dwolfhub/zxcvbn-python',
