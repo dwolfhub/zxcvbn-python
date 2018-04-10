@@ -1,6 +1,7 @@
 env*
 venv*
 .cache
+.pytest_cache
 *.pyc
 dist
 build
