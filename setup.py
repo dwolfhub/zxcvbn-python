@@ -4,11 +4,11 @@ with open('README.rst') as file:
     long_description = file.read()
 
 setup(
-    name='zxcvbn',
-    version='4.4.22',
+    name='zxcvbn'
+    version='4.4.24',
     packages=['zxcvbn'],
     url='https://github.com/dwolfhub/zxcvbn-python',
-    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.22',
+    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.24',
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
