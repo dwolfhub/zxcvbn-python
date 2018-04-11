@@ -1,3 +1,11 @@
+DEPRECATION WARNING
+===================
+
+This package has been moved! Please install using `pip install zxcvbn`.
+
+https://pypi.python.org/pypi/zxcvbn
+
+
 |Build Status|
 
 zxcvbn-python

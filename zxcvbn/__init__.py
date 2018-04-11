@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from . import matching, scoring, time_estimates, feedback
+import warnings
 
+warnings.warn("deprecated", DeprecationWarning)
 
 def zxcvbn(password, user_inputs=None):
     try:
