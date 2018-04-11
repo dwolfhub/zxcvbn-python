@@ -7,14 +7,7 @@ from zxcvbn.scoring import most_guessable_match_sequence
 
 
 def build_ranked_dict(ordered_list):
-    result = {}
-    i = 1
-    for word in ordered_list:
-        result[word] = i
-        i += 1
-
-    return result
-
+    return {word: idx for idx, word in enumerate(ordered_list, 1)}
 
 RANKED_DICTIONARIES = {}
 
