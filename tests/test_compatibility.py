@@ -1,6 +1,7 @@
 import json
 from zxcvbn import zxcvbn
 import sys, getopt
+from decimal import Decimal
 
 MAX_NUMBER_FOR_ACCURACY = 1000000000000
 MIN_NUMBER_FOR_ACCURACY = 1
@@ -15,7 +16,7 @@ def main(argv):
 
 	verbose = False
 	tests_file = ""
-	
+
 	try:
 		tests_file = argv[0]
 		opts, args = getopt.getopt(argv[1:],"v")
@@ -37,7 +38,7 @@ def main(argv):
 
 	i = 0
 	for js_zxcvbn_score in d:
-		if i%refresh_rate== 0: 
+		if i%refresh_rate== 0:
 			update_console_status(i*100/number_of_passwords)
 		i += 1
 
@@ -47,7 +48,7 @@ def main(argv):
 		py_zxcvbn_scroe["guesses"] = py_zxcvbn_scroe_full["guesses"]
 		py_zxcvbn_scroe["score"] = py_zxcvbn_scroe_full["score"]
 
-		if (abs(py_zxcvbn_scroe["guesses"] - js_zxcvbn_score["guesses"]) > MIN_NUMBER_FOR_ACCURACY and
+		if (abs(py_zxcvbn_scroe["guesses"] - Decimal(js_zxcvbn_score["guesses"])) > MIN_NUMBER_FOR_ACCURACY and
 		   py_zxcvbn_scroe["guesses"] < MAX_NUMBER_FOR_ACCURACY):
 			guesses_collision += 1
 			if verbose:
@@ -61,7 +62,7 @@ results:
 			scores_collision += 1
 
 	if (guesses_collision or scores_collision):
-		print ("""\033[91mFailed! 	
+		print ("""\033[91mFailed!
 guesses_collision:%d
 guesses_score:%d""")%(guesses_collision, scores_collision)
 	else:
