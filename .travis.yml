@@ -8,7 +8,10 @@ python:
   - "3.5"
   - "3.6"
 install: "pip install -r requirements.txt"
-script: pytest
+script:
+  - pytest
+  - pip install -e .
+  - python tests/test_compatibility.py tests/password_expected_value.json
 notifications:
   email:
     on_success: never
