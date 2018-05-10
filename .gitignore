@@ -5,5 +5,5 @@ venv*
 *.pyc
 dist
 build
-zxcvbn_python.egg-info
+zxcvbn*.egg-info
 .vscode
