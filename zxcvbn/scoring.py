@@ -4,6 +4,8 @@ import re
 
 from .adjacency_graphs import ADJACENCY_GRAPHS
 
+from decimal import Decimal
+
 
 def calc_average_degree(graph):
     average = 0
@@ -114,7 +116,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
             # obtain the product term in the minimization function by
             # multiplying m's guesses by the product of the length-(l-1)
             # sequence ending just before m, at m.i - 1.
-            pi *= optimal['pi'][m['i'] - 1][l - 1]
+            pi = pi * Decimal(optimal['pi'][m['i'] - 1][l - 1])
         # calculate the minimization func
         g = factorial(l) * pi
         if not _exclude_additive:
@@ -219,7 +221,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
 
 def estimate_guesses(match, password):
     if match.get('guesses', False):
-        return match['guesses']
+        return Decimal(match['guesses'])
 
     min_guesses = 1
     if len(match['token']) < len(password):
@@ -242,7 +244,7 @@ def estimate_guesses(match, password):
     match['guesses'] = max(guesses, min_guesses)
     match['guesses_log10'] = log(match['guesses'], 10)
 
-    return match['guesses']
+    return Decimal(match['guesses'])
 
 
 def bruteforce_guesses(match):
@@ -266,11 +268,11 @@ def dictionary_guesses(match):
     reversed_variations = match.get('reversed', False) and 2 or 1
 
     return match['base_guesses'] * match['uppercase_variations'] * \
-           match['l33t_variations'] * reversed_variations
+        match['l33t_variations'] * reversed_variations
 
 
 def repeat_guesses(match):
-    return match['base_guesses'] * match['repeat_count']
+    return match['base_guesses'] * Decimal(match['repeat_count'])
 
 
 def sequence_guesses(match):

@@ -17,3 +17,10 @@ def test_invalid_user_inputs():
     password = u'pÄssword junkiË'
 
     zxcvbn(password, user_inputs=[input_])
+
+
+def test_long_password():
+    input_ = None
+    password = "weopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioej"
+
+    zxcvbn(password, user_inputs=[input_])
