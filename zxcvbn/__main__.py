@@ -30,7 +30,9 @@ def cli():
     # check if stdin is ready for reading
     rlist, _, _ = select.select([sys.stdin], [], [], 0.0)
     if rlist:
-        password = rlist[0].readline()[:-1]  # strip off the trailing newline
+        password = rlist[0].read()
+        if password[-1] == '\n':  # strip off the trailing newline
+            password = password[:-1]
     else:
         password = getpass.getpass()
 
