@@ -1,5 +1,6 @@
 import argparse
 import json
+import select
 import sys
 import getpass
 
@@ -25,7 +26,16 @@ class JSONEncoder(json.JSONEncoder):
 
 def cli():
     args = parser.parse_args()
-    password = getpass.getpass()
+
+    # check if stdin is ready for reading
+    rlist, _, _ = select.select([sys.stdin], [], [], 0.0)
+    if rlist:
+        password = rlist[0].read()
+        if password[-1] == '\n':  # strip off the trailing newline
+            password = password[:-1]
+    else:
+        password = getpass.getpass()
+
     res = zxcvbn(password, user_inputs=args.user_input)
     json.dump(res, sys.stdout, indent=2, cls=JSONEncoder)
     sys.stdout.write('\n')
