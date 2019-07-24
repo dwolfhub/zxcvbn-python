@@ -32,5 +32,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Security',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
+    ],
+    message_extractors={'zxcvbn': [
+        ('**.py', 'python', None),
+    ]},
 )

@@ -1,0 +1,127 @@
+# Translations template for zxcvbn.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the zxcvbn project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: zxcvbn 4.4.28\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-07-24 15:52+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+
+#: zxcvbn/feedback.py:10
+msgid "Use a few words, avoid common phrases."
+msgstr ""
+
+#: zxcvbn/feedback.py:11
+msgid "No need for symbols, digits, or uppercase letters."
+msgstr ""
+
+#: zxcvbn/feedback.py:27
+msgid "Add another word or two. Uncommon words are better."
+msgstr ""
+
+#: zxcvbn/feedback.py:46
+msgid "Straight rows of keys are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:48
+msgid "Short keyboard patterns are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:53
+msgid "Use a longer keyboard pattern with more turns."
+msgstr ""
+
+#: zxcvbn/feedback.py:58
+msgid "Repeats like \"aaa\" are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:60
+msgid "Repeats like \"abcabcabc\" are only slightly harder to guess than \"abc\"."
+msgstr ""
+
+#: zxcvbn/feedback.py:65
+msgid "Avoid repeated words and characters."
+msgstr ""
+
+#: zxcvbn/feedback.py:70
+msgid "Sequences like \"abc\" or \"6543\" are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:72
+msgid "Avoid sequences."
+msgstr ""
+
+#: zxcvbn/feedback.py:78
+msgid "Recent years are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:80
+msgid "Avoid recent years."
+msgstr ""
+
+#: zxcvbn/feedback.py:81
+msgid "Avoid years that are associated with you."
+msgstr ""
+
+#: zxcvbn/feedback.py:86
+msgid "Dates are often easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:88
+msgid "Avoid dates and years that are associated with you."
+msgstr ""
+
+#: zxcvbn/feedback.py:99
+msgid "This is a top-10 common password."
+msgstr ""
+
+#: zxcvbn/feedback.py:101
+msgid "This is a top-100 common password."
+msgstr ""
+
+#: zxcvbn/feedback.py:103
+msgid "This is a very common password."
+msgstr ""
+
+#: zxcvbn/feedback.py:105
+msgid "This is similar to a commonly used password."
+msgstr ""
+
+#: zxcvbn/feedback.py:108
+msgid "A word by itself is easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:112
+msgid "Names and surnames by themselves are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:114
+msgid "Common names and surnames are easy to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:121
+msgid "Capitalization doesn't help very much."
+msgstr ""
+
+#: zxcvbn/feedback.py:123
+msgid "All-uppercase is almost as easy to guess as all-lowercase."
+msgstr ""
+
+#: zxcvbn/feedback.py:127
+msgid "Reversed words aren't much harder to guess."
+msgstr ""
+
+#: zxcvbn/feedback.py:129
+msgid "Predictable substitutions like '@' instead of 'a' don't help very much."
+msgstr ""
+
