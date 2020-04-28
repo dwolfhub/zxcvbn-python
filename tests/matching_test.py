@@ -163,7 +163,7 @@ def test_dictionary_matching():
 
     for name, dict in test_dicts.items():
         for word, rank in dict.items():
-            if word is 'motherboard':
+            if word == 'motherboard':
                 continue  # skip words that contain others
             matches = dm(word)
             msg = "matches against all words in provided dictionaries"
