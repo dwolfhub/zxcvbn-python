@@ -1,49 +1,51 @@
-from zxcvbn import scoring
-from . import adjacency_graphs
-from zxcvbn.frequency_lists import FREQUENCY_LISTS
 import re
+from decimal import Decimal
+from re import Match, Pattern
+from typing import Any, Dict, List, Optional, Set, Tuple, Union, Callable
 
-from zxcvbn.scoring import most_guessable_match_sequence
+from . import adjacency_graphs, scoring
+from .frequency_lists import FREQUENCY_LISTS
+from .scoring import most_guessable_match_sequence
+from .types import RankedDict, SubstitutionTable, AdjacencyGraph, PasswordMatch
 
 
-def build_ranked_dict(ordered_list):
+def build_ranked_dict(ordered_list: List[str]) -> RankedDict:
     return {word: idx for idx, word in enumerate(ordered_list, 1)}
 
-RANKED_DICTIONARIES = {}
+
+RANKED_DICTIONARIES: Dict[str, RankedDict] = {}
 
 
-def add_frequency_lists(frequency_lists_):
+def add_frequency_lists(frequency_lists_: Dict[str, List[str]]) -> None:
     for name, lst in frequency_lists_.items():
         RANKED_DICTIONARIES[name] = build_ranked_dict(lst)
 
 
 add_frequency_lists(FREQUENCY_LISTS)
 
-GRAPHS = {
-    'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty'],
-    'dvorak': adjacency_graphs.ADJACENCY_GRAPHS['dvorak'],
-    'keypad': adjacency_graphs.ADJACENCY_GRAPHS['keypad'],
-    'mac_keypad': adjacency_graphs.ADJACENCY_GRAPHS['mac_keypad'],
+GRAPHS: Dict[str, AdjacencyGraph] = {
+    "qwerty": adjacency_graphs.ADJACENCY_GRAPHS["qwerty"], # type: ignore
+    "dvorak": adjacency_graphs.ADJACENCY_GRAPHS["dvorak"], # type: ignore
+    "keypad": adjacency_graphs.ADJACENCY_GRAPHS["keypad"], # type: ignore
+    "mac_keypad": adjacency_graphs.ADJACENCY_GRAPHS["mac_keypad"], # type: ignore
 }
 
-L33T_TABLE = {
-    'a': ['4', '@'],
-    'b': ['8'],
-    'c': ['(', '{', '[', '<'],
-    'e': ['3'],
-    'g': ['6', '9'],
-    'i': ['1', '!', '|'],
-    'l': ['1', '|', '7'],
-    'o': ['0'],
-    's': ['$', '5'],
-    't': ['+', '7'],
-    'x': ['%'],
-    'z': ['2'],
+L33T_TABLE: SubstitutionTable = {
+    "a": {"4", "@"},
+    "b": {"8"},
+    "c": {"(", "{", "[", "<"},
+    "e": {"3"},
+    "g": {"6", "9"},
+    "i": {"1", "!", "|"},
+    "l": {"1", "|", "7"},
+    "o": {"0"},
+    "s": {"$", "5"},
+    "t": {"+", "7"},
+    "x": {"%"},
+    "z": {"2"},
 }
 
-REGEXEN = {
-    'recent_year': re.compile(r'19\d\d|200\d|201\d'),
-}
+REGEXEN = {"recent_year": re.compile(r"19\d\d|200\d|201\d")}
 
 DATE_MAX_YEAR = 2050
 DATE_MIN_YEAR = 1000
@@ -52,31 +54,24 @@ DATE_SPLITS = {
         [1, 2],  # 1 1 91 (2nd split starts at index 1, 3rd at index 2)
         [2, 3],  # 91 1 1
     ],
-    5: [
-        [1, 3],  # 1 11 91
-        [2, 3],  # 11 1 91
-    ],
-    6: [
-        [1, 2],  # 1 1 1991
-        [2, 4],  # 11 11 91
-        [4, 5],  # 1991 1 1
-    ],
+    5: [[1, 3], [2, 3]],  # 1 11 91  # 11 1 91
+    6: [[1, 2], [2, 4], [4, 5]],  # 1 1 1991  # 11 11 91  # 1991 1 1
     7: [
         [1, 3],  # 1 11 1991
         [2, 3],  # 11 1 1991
         [4, 5],  # 1991 1 11
         [4, 6],  # 1991 11 1
     ],
-    8: [
-        [2, 4],  # 11 11 1991
-        [4, 6],  # 1991 11 11
-    ],
+    8: [[2, 4], [4, 6]],  # 11 11 1991  # 1991 11 11
 }
 
 
 # omnimatch -- perform all matches
-def omnimatch(password, _ranked_dictionaries=RANKED_DICTIONARIES):
-    matches = []
+def omnimatch(
+    password: str, _ranked_dictionaries: Dict[str, RankedDict] = RANKED_DICTIONARIES
+) -> List[PasswordMatch]:
+    matches: List[PasswordMatch] = []
+    matcher: Callable[..., List[PasswordMatch]]
     for matcher in [
         dictionary_match,
         reverse_dictionary_match,
@@ -89,86 +84,94 @@ def omnimatch(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     ]:
         matches.extend(matcher(password, _ranked_dictionaries=_ranked_dictionaries))
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return sorted(matches, key=lambda x: (x["i"], x["j"]))
 
 
 # dictionary match (common passwords, english, last names, etc)
-def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
-    matches = []
+def dictionary_match(
+    password: str, _ranked_dictionaries: Dict[str, RankedDict] = RANKED_DICTIONARIES
+) -> List[PasswordMatch]:
+    """Matches every substring of the password against the given dictionaries"""
+    matches: List[PasswordMatch] = []
     length = len(password)
     password_lower = password.lower()
     for dictionary_name, ranked_dict in _ranked_dictionaries.items():
         for i in range(length):
             for j in range(i, length):
-                if password_lower[i:j + 1] in ranked_dict:
-                    word = password_lower[i:j + 1]
+                if password_lower[i : j + 1] in ranked_dict:
+                    word = password_lower[i : j + 1]
                     rank = ranked_dict[word]
-                    matches.append({
-                        'pattern': 'dictionary',
-                        'i': i,
-                        'j': j,
-                        'token': password[i:j + 1],
-                        'matched_word': word,
-                        'rank': rank,
-                        'dictionary_name': dictionary_name,
-                        'reversed': False,
-                        'l33t': False,
-                    })
+                    matches.append(
+                        {
+                            "pattern": "dictionary",
+                            "i": i,
+                            "j": j,
+                            "token": password[i : j + 1],
+                            "matched_word": word,
+                            "rank": rank,
+                            "dictionary_name": dictionary_name,
+                            "reversed": False,
+                            "l33t": False,
+                        }
+                    )
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return sorted(matches, key=lambda x: (x["i"], x["j"]))
 
 
-def reverse_dictionary_match(password,
-                             _ranked_dictionaries=RANKED_DICTIONARIES):
-    reversed_password = ''.join(reversed(password))
+def reverse_dictionary_match(
+    password: str, _ranked_dictionaries: Dict[str, RankedDict] = RANKED_DICTIONARIES
+) -> List[PasswordMatch]:
+    """Same as dictionary_match but reverses the password beforehand"""
+    reversed_password = "".join(reversed(password))
     matches = dictionary_match(reversed_password, _ranked_dictionaries)
     for match in matches:
-        match['token'] = ''.join(reversed(match['token']))
-        match['reversed'] = True
-        match['i'], match['j'] = len(password) - 1 - match['j'], \
-                                 len(password) - 1 - match['i']
+        match["token"] = "".join(reversed(match["token"]))
+        match["reversed"] = True
+        match["i"], match["j"] = (
+            len(password) - 1 - match["j"],
+            len(password) - 1 - match["i"],
+        )
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return sorted(matches, key=lambda x: (x["i"], x["j"]))
 
 
-def relevant_l33t_subtable(password, table):
-    password_chars = {}
-    for char in list(password):
-        password_chars[char] = True
+def relevant_l33t_subtable(
+    password: str, table: SubstitutionTable
+) -> SubstitutionTable:
+    """Extract the relevant substitutions for the password from the table"""
+    password_chars = set(password)
 
-    subtable = {}
+    subtable: SubstitutionTable = {}
     for letter, subs in table.items():
-        relevant_subs = [sub for sub in subs if sub in password_chars]
-        if len(relevant_subs) > 0:
+        relevant_subs = password_chars.intersection(subs)
+        if relevant_subs:
             subtable[letter] = relevant_subs
 
     return subtable
 
 
-def enumerate_l33t_subs(table):
-    keys = list(table.keys())
-    subs = [[]]
-
-    def dedup(subs):
-        deduped = []
+def enumerate_l33t_subs(table: SubstitutionTable) -> List[Dict[str, str]]:
+    def dedup(subs: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+        deduped: List[Tuple[str, str]] = []
         members = {}
         for sub in subs:
             assoc = [(k, v) for v, k in sub]
             assoc.sort()
-            label = '-'.join([k + ',' + str(v) for k, v in assoc])
+            label = "-".join([k + "," + str(v) for k, v in assoc])
             if label not in members:
                 members[label] = True
                 deduped.append(sub)
 
         return deduped
 
-    def helper(keys, subs):
-        if not len(keys):
+    def helper(
+        keys: List[str], subs: List[List[Tuple[str, str]]]
+    ) -> List[List[Tuple[str, str]]]:
+        if not keys:
             return subs
 
         first_key = keys[0]
-        rest_keys = keys[1:]
-        next_subs = []
+        next_subs: List[Tuple[str, str]] = []
         for l33t_chr in table[first_key]:
             for sub in subs:
                 dup_l33t_index = -1
@@ -178,53 +181,49 @@ def enumerate_l33t_subs(table):
                         break
                 if dup_l33t_index == -1:
                     sub_extension = list(sub)
-                    sub_extension.append([l33t_chr, first_key])
+                    sub_extension.append((l33t_chr, first_key))
                     next_subs.append(sub_extension)
                 else:
                     sub_alternative = list(sub)
                     sub_alternative.pop(dup_l33t_index)
-                    sub_alternative.append([l33t_chr, first_key])
+                    sub_alternative.append((l33t_chr, first_key))
                     next_subs.append(sub)
                     next_subs.append(sub_alternative)
 
         subs = dedup(next_subs)
-        return helper(rest_keys, subs)
+        return helper(keys[1:], subs)
 
-    subs = helper(keys, subs)
+    subs = helper(list(table), [[]])
     sub_dicts = []  # convert from assoc lists to dicts
     for sub in subs:
         sub_dict = {}
-        for l33t_chr, chr in sub:
-            sub_dict[l33t_chr] = chr
+        for l33t_chr, char in sub:
+            sub_dict[l33t_chr] = char
         sub_dicts.append(sub_dict)
 
     return sub_dicts
 
 
-def translate(string, chr_map):
-    chars = []
-    for char in list(string):
-        if chr_map.get(char, False):
-            chars.append(chr_map[char])
-        else:
-            chars.append(char)
-
-    return ''.join(chars)
+def translate(string: str, chr_map: Dict[str, str]) -> str:
+    return string.translate(str.maketrans(chr_map)) # type: ignore
 
 
-def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
-               _l33t_table=L33T_TABLE):
+def l33t_match(
+    password: str,
+    _ranked_dictionaries: Dict[str, RankedDict] = RANKED_DICTIONARIES,
+    _l33t_table: SubstitutionTable = L33T_TABLE,
+) -> List[PasswordMatch]:
+    """Performs a dictionary_match with common l33t substitutions"""
     matches = []
 
-    for sub in enumerate_l33t_subs(
-            relevant_l33t_subtable(password, _l33t_table)):
+    for sub in enumerate_l33t_subs(relevant_l33t_subtable(password, _l33t_table)):
         if not len(sub):
             break
 
         subbed_password = translate(password, sub)
         for match in dictionary_match(subbed_password, _ranked_dictionaries):
-            token = password[match['i']:match['j'] + 1]
-            if token.lower() == match['matched_word']:
+            token = password[match["i"] : match["j"] + 1]
+            if token.lower() == match["matched_word"]:
                 # only return the matches that contain an actual substitution
                 continue
 
@@ -233,25 +232,27 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
             for subbed_chr, chr in sub.items():
                 if subbed_chr in token:
                     match_sub[subbed_chr] = chr
-            match['l33t'] = True
-            match['token'] = token
-            match['sub'] = match_sub
-            match['sub_display'] = ', '.join(
+            match["l33t"] = True
+            match["token"] = token
+            match["sub"] = match_sub
+            match["sub_display"] = ", ".join(
                 ["%s -> %s" % (k, v) for k, v in match_sub.items()]
             )
             matches.append(match)
 
-    matches = [match for match in matches if len(match['token']) > 1]
+    matches = [match for match in matches if len(match["token"]) > 1]
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return sorted(matches, key=lambda x: (x["i"], x["j"]))
 
 
 # repeats (aaa, abcabcabc) and sequences (abcdef)
-def repeat_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
-    matches = []
-    greedy = re.compile(r'(.+)\1+')
-    lazy = re.compile(r'(.+?)\1+')
-    lazy_anchored = re.compile(r'^(.+?)\1+$')
+def repeat_match(
+    password: str, _ranked_dictionaries: Dict[str, RankedDict] = RANKED_DICTIONARIES
+) -> List[PasswordMatch]:
+    matches: List[PasswordMatch] = []
+    greedy = re.compile(r"(.+)\1+")
+    lazy = re.compile(r"(.+?)\1+")
+    lazy_anchored = re.compile(r"^(.+?)\1+$")
     last_index = 0
     while last_index < len(password):
         greedy_match = greedy.search(password, pos=last_index)
@@ -259,6 +260,8 @@ def repeat_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
 
         if not greedy_match:
             break
+
+        assert greedy_match is not None
 
         if len(greedy_match.group(0)) > len(lazy_match.group(0)):
             # greedy beats lazy for 'aabaab'
@@ -271,53 +274,61 @@ def repeat_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
             # to find the shortest repeated string
             base_token = lazy_anchored.search(match.group(0)).group(1)
         else:
+            assert lazy_match is not None
             match = lazy_match
             base_token = match.group(1)
 
         i, j = match.span()[0], match.span()[1] - 1
 
         # recursively match and score the base string
-        base_analysis = most_guessable_match_sequence(
-            base_token,
-            omnimatch(base_token)
+        base_analysis = most_guessable_match_sequence(base_token, omnimatch(base_token))
+        base_matches = base_analysis["sequence"]
+        base_guesses = base_analysis["guesses"]
+        matches.append(
+            {
+                "pattern": "repeat",
+                "i": i,
+                "j": j,
+                "token": match.group(0),
+                "base_token": base_token,
+                "base_guesses": base_guesses,
+                "base_matches": base_matches,
+                "repeat_count": len(match.group(0)) / len(base_token),
+            }
         )
-        base_matches = base_analysis['sequence']
-        base_guesses = base_analysis['guesses']
-        matches.append({
-            'pattern': 'repeat',
-            'i': i,
-            'j': j,
-            'token': match.group(0),
-            'base_token': base_token,
-            'base_guesses': base_guesses,
-            'base_matches': base_matches,
-            'repeat_count': len(match.group(0)) / len(base_token),
-        })
         last_index = j + 1
 
     return matches
 
 
-def spatial_match(password, _graphs=GRAPHS, _ranked_dictionaries=RANKED_DICTIONARIES):
+def spatial_match(
+    password: str,
+    _graphs: Dict[str, AdjacencyGraph] = GRAPHS,
+    _ranked_dictionaries: Dict[str, RankedDict] = RANKED_DICTIONARIES,
+) -> List[PasswordMatch]:
+    """Matches based on spatial proximity on e.g. keyboards"""
     matches = []
     for graph_name, graph in _graphs.items():
         matches.extend(spatial_match_helper(password, graph, graph_name))
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return sorted(matches, key=lambda x: (x["i"], x["j"]))
 
 
 SHIFTED_RX = re.compile(r'[~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?]')
 
 
-def spatial_match_helper(password, graph, graph_name):
+def spatial_match_helper(
+    password: str,
+    graph: AdjacencyGraph,
+    graph_name: str,
+) -> List[PasswordMatch]:
     matches = []
     i = 0
     while i < len(password) - 1:
         j = i + 1
         last_direction = None
         turns = 0
-        if graph_name in ['qwerty', 'dvorak', ] and \
-                SHIFTED_RX.search(password[i]):
+        if graph_name in ["qwerty", "dvorak"] and SHIFTED_RX.search(password[i]):
             # initial character is shifted
             shifted_count = 1
         else:
@@ -360,15 +371,17 @@ def spatial_match_helper(password, graph, graph_name):
             # otherwise push the pattern discovered so far, if any...
             else:
                 if j - i > 2:  # don't consider length 1 or 2 chains.
-                    matches.append({
-                        'pattern': 'spatial',
-                        'i': i,
-                        'j': j - 1,
-                        'token': password[i:j],
-                        'graph': graph_name,
-                        'turns': turns,
-                        'shifted_count': shifted_count,
-                    })
+                    matches.append(
+                        {
+                            "pattern": "spatial",
+                            "i": i,
+                            "j": j - 1,
+                            "token": password[i:j],
+                            "graph": graph_name,
+                            "turns": turns,
+                            "shifted_count": shifted_count,
+                        }
+                    )
                 # ...and then start a new search for the rest of the password.
                 i = j
                 break
@@ -379,7 +392,9 @@ def spatial_match_helper(password, graph, graph_name):
 MAX_DELTA = 5
 
 
-def sequence_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def sequence_match(
+    password: str, _ranked_dictionaries: Dict[str, Dict[str, int]] = RANKED_DICTIONARIES
+) -> List[PasswordMatch]:
     # Identifies sequences by looking for repeated differences in unicode codepoint.
     # this allows skipping, such as 9753, and also matches some extended unicode sequences
     # such as Greek and Cyrillic alphabets.
@@ -398,30 +413,32 @@ def sequence_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     def update(i, j, delta):
         if j - i > 1 or (delta and abs(delta) == 1):
             if 0 < abs(delta) <= MAX_DELTA:
-                token = password[i:j + 1]
-                if re.compile(r'^[a-z]+$').match(token):
-                    sequence_name = 'lower'
+                token = password[i : j + 1]
+                if re.compile(r"^[a-z]+$").match(token):
+                    sequence_name = "lower"
                     sequence_space = 26
-                elif re.compile(r'^[A-Z]+$').match(token):
-                    sequence_name = 'upper'
+                elif re.compile(r"^[A-Z]+$").match(token):
+                    sequence_name = "upper"
                     sequence_space = 26
-                elif re.compile(r'^\d+$').match(token):
-                    sequence_name = 'digits'
+                elif re.compile(r"^\d+$").match(token):
+                    sequence_name = "digits"
                     sequence_space = 10
                 else:
-                    sequence_name = 'unicode'
+                    sequence_name = "unicode"
                     sequence_space = 26
-                result.append({
-                    'pattern': 'sequence',
-                    'i': i,
-                    'j': j,
-                    'token': password[i:j + 1],
-                    'sequence_name': sequence_name,
-                    'sequence_space': sequence_space,
-                    'ascending': delta > 0
-                })
+                result.append(
+                    {
+                        "pattern": "sequence",
+                        "i": i,
+                        "j": j,
+                        "token": password[i : j + 1],
+                        "sequence_name": sequence_name,
+                        "sequence_space": sequence_space,
+                        "ascending": delta > 0,
+                    }
+                )
 
-    result = []
+    result: List[PasswordMatch] = []
     i = 0
     last_delta = None
 
@@ -440,23 +457,31 @@ def sequence_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     return result
 
 
-def regex_match(password, _regexen=REGEXEN, _ranked_dictionaries=RANKED_DICTIONARIES):
-    matches = []
+def regex_match(
+    password: str,
+    _regexen: Dict[str, Pattern] = REGEXEN,
+    _ranked_dictionaries: Dict[str, Dict[str, int]] = RANKED_DICTIONARIES,
+) -> List[PasswordMatch]:
+    matches: List[PasswordMatch] = []
     for name, regex in _regexen.items():
         for rx_match in regex.finditer(password):
-            matches.append({
-                'pattern': 'regex',
-                'token': rx_match.group(0),
-                'i': rx_match.start(),
-                'j': rx_match.end()-1,
-                'regex_name': name,
-                'regex_match': rx_match,
-            })
+            matches.append(
+                {
+                    "pattern": "regex",
+                    "token": rx_match.group(0),
+                    "i": rx_match.start(),
+                    "j": rx_match.end() - 1,
+                    "regex_name": name,
+                    "regex_match": rx_match,
+                }
+            )
 
-    return sorted(matches, key=lambda x: (x['i'], x['j']))
+    return sorted(matches, key=lambda x: (x["i"], x["j"]))
 
 
-def date_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def date_match(
+    password: str, _ranked_dictionaries: Dict[str, Dict[str, int]] = RANKED_DICTIONARIES
+) -> List[PasswordMatch]:
     # a "date" is recognized as:
     #   any 3-tuple that starts or ends with a 2- or 4-digit year,
     #   with 2 or 0 separator chars (1.1.91 or 1191),
@@ -475,10 +500,10 @@ def date_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     # note: instead of using a lazy or greedy regex to find many dates over the full string,
     # this uses a ^...$ regex against every substring of the password -- less performant but leads
     # to every possible date match.
-    matches = []
-    maybe_date_no_separator = re.compile(r'^\d{4,8}$')
+    matches: List[PasswordMatch] = []
+    maybe_date_no_separator = re.compile(r"^\d{4,8}$")
     maybe_date_with_separator = re.compile(
-        r'^(\d{1,4})([\s/\\_.-])(\d{1,2})\2(\d{1,4})$'
+        r"^(\d{1,4})([\s/\\_.-])(\d{1,2})\2(\d{1,4})$"
     )
 
     # dates without separators are between length 4 '1191' and 8 '11111991'
@@ -487,16 +512,14 @@ def date_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
             if j >= len(password):
                 break
 
-            token = password[i:j + 1]
+            token = password[i : j + 1]
             if not maybe_date_no_separator.match(token):
                 continue
             candidates = []
             for k, l in DATE_SPLITS[len(token)]:
-                dmy = map_ints_to_dmy([
-                    int(token[0:k]),
-                    int(token[k:l]),
-                    int(token[l:])
-                ])
+                dmy = map_ints_to_dmy(
+                    [int(token[0:k]), int(token[k:l]), int(token[l:])]
+                )
                 if dmy:
                     candidates.append(dmy)
             if not len(candidates) > 0:
@@ -510,50 +533,52 @@ def date_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
             best_candidate = candidates[0]
 
             def metric(candidate_):
-                return abs(candidate_['year'] - scoring.REFERENCE_YEAR)
+                return abs(candidate_["year"] - scoring.REFERENCE_YEAR)
 
             min_distance = metric(candidates[0])
             for candidate in candidates[1:]:
                 distance = metric(candidate)
                 if distance < min_distance:
                     best_candidate, min_distance = candidate, distance
-            matches.append({
-                'pattern': 'date',
-                'token': token,
-                'i': i,
-                'j': j,
-                'separator': '',
-                'year': best_candidate['year'],
-                'month': best_candidate['month'],
-                'day': best_candidate['day'],
-            })
+            matches.append(
+                {
+                    "pattern": "date",
+                    "token": token,
+                    "i": i,
+                    "j": j,
+                    "separator": "",
+                    "year": best_candidate["year"],
+                    "month": best_candidate["month"],
+                    "day": best_candidate["day"],
+                }
+            )
 
     # dates with separators are between length 6 '1/1/91' and 10 '11/11/1991'
     for i in range(len(password) - 5):
         for j in range(i + 5, i + 10):
             if j >= len(password):
                 break
-            token = password[i:j + 1]
+            token = password[i : j + 1]
             rx_match = maybe_date_with_separator.match(token)
             if not rx_match:
                 continue
-            dmy = map_ints_to_dmy([
-                int(rx_match.group(1)),
-                int(rx_match.group(3)),
-                int(rx_match.group(4)),
-            ])
+            dmy = map_ints_to_dmy(
+                [int(rx_match.group(1)), int(rx_match.group(3)), int(rx_match.group(4))]
+            )
             if not dmy:
                 continue
-            matches.append({
-                'pattern': 'date',
-                'token': token,
-                'i': i,
-                'j': j,
-                'separator': rx_match.group(2),
-                'year': dmy['year'],
-                'month': dmy['month'],
-                'day': dmy['day'],
-            })
+            matches.append(
+                {
+                    "pattern": "date",
+                    "token": token,
+                    "i": i,
+                    "j": j,
+                    "separator": rx_match.group(2),
+                    "year": dmy["year"],
+                    "month": dmy["month"],
+                    "day": dmy["day"],
+                }
+            )
 
     # matches now contains all valid date strings in a way that is tricky to
     # capture with regexes only. while thorough, it will contain some
@@ -569,15 +594,16 @@ def date_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
         for other in matches:
             if match == other:
                 continue
-            if other['i'] <= match['i'] and other['j'] >= match['j']:
+            if other["i"] <= match["i"] and other["j"] >= match["j"]:
                 is_submatch = True
                 break
         return not is_submatch
 
-    return sorted(filter(filter_fun, matches), key=lambda x: (x['i'], x['j']))
+
+    return sorted(filter(filter_fun, matches), key=lambda x: (x["i"], x["j"]))
 
 
-def map_ints_to_dmy(ints):
+def map_ints_to_dmy(ints: List[int]) -> Optional[Dict[str, int]]:
     # given a 3-tuple, discard if:
     #   middle int is over 31 (for all dmy formats, years are never allowed in
     #   the middle)
@@ -588,13 +614,13 @@ def map_ints_to_dmy(ints):
     #   2 ints are zero
     #   all ints are over 12, the max allowable month
     if ints[1] > 31 or ints[1] <= 0:
-        return
+        return None
     over_12 = 0
     over_31 = 0
     under_1 = 0
     for int in ints:
         if 99 < int < DATE_MIN_YEAR or int > DATE_MAX_YEAR:
-            return
+            return None
         if int > 31:
             over_31 += 1
         if int > 12:
@@ -602,27 +628,20 @@ def map_ints_to_dmy(ints):
         if int <= 0:
             under_1 += 1
     if over_31 >= 2 or over_12 == 3 or under_1 >= 2:
-        return
+        return None
 
     # first look for a four digit year: yyyy + daymonth or daymonth + yyyy
-    possible_four_digit_splits = [
-        (ints[2], ints[0:2]),
-        (ints[0], ints[1:3]),
-    ]
+    possible_four_digit_splits = [(ints[2], ints[0:2]), (ints[0], ints[1:3])]
     for y, rest in possible_four_digit_splits:
         if DATE_MIN_YEAR <= y <= DATE_MAX_YEAR:
             dm = map_ints_to_dm(rest)
             if dm:
-                return {
-                    'year': y,
-                    'month': dm['month'],
-                    'day': dm['day'],
-                }
+                return {"year": y, "month": dm["month"], "day": dm["day"]}
             else:
                 # for a candidate that includes a four-digit year,
                 # when the remaining ints don't match to a day and month,
                 # it is not a date.
-                return
+                return None
 
     # given no four-digit year, two digit years are the most flexible int to
     # match, so try to parse a day-month out of ints[0..1] or ints[1..0]
@@ -630,23 +649,18 @@ def map_ints_to_dmy(ints):
         dm = map_ints_to_dm(rest)
         if dm:
             y = two_to_four_digit_year(y)
-            return {
-                'year': y,
-                'month': dm['month'],
-                'day': dm['day'],
-            }
+            return {"year": y, "month": dm["month"], "day": dm["day"]}
 
 
-def map_ints_to_dm(ints):
+def map_ints_to_dm(ints: List[int]) -> Optional[Dict[str, int]]:
     for d, m in [ints, reversed(ints)]:
         if 1 <= d <= 31 and 1 <= m <= 12:
-            return {
-                'day': d,
-                'month': m,
-            }
+            return {"day": d, "month": m}
+        
+    return None
 
 
-def two_to_four_digit_year(year):
+def two_to_four_digit_year(year: int) -> int:
     if year > 99:
         return year
     elif year > 50:
