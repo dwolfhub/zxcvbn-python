@@ -1,6 +1,7 @@
 from decimal import Decimal, Context, Inexact
+from typing import Dict, Union
 
-def estimate_attack_times(guesses):
+def estimate_attack_times(guesses: Union[Decimal, int]) -> Dict[str, Union[Dict[str, Decimal], Dict[str, str], int]]:
     crack_times_seconds = {
         'online_throttling_100_per_hour': Decimal(guesses) / float_to_decimal(100.0 / 3600.0),
         'online_no_throttling_10_per_second': Decimal(guesses) / float_to_decimal(10.0),
@@ -19,7 +20,7 @@ def estimate_attack_times(guesses):
     }
 
 
-def guesses_to_score(guesses):
+def guesses_to_score(guesses: Union[Decimal, int]) -> int:
     delta = 5
 
     if guesses < 1e3 + delta:
@@ -43,7 +44,7 @@ def guesses_to_score(guesses):
         return 4
 
 
-def display_time(seconds):
+def display_time(seconds: Decimal) -> str:
     minute = 60
     hour = minute * 60
     day = hour * 24
@@ -78,7 +79,7 @@ def display_time(seconds):
 
     return display_str
 
-def float_to_decimal(f):
+def float_to_decimal(f: float) -> Decimal:
     "Convert a floating point number to a Decimal with no loss of information"
     n, d = f.as_integer_ratio()
     numerator, denominator = Decimal(n), Decimal(d)
