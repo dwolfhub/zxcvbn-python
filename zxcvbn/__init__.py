@@ -1,32 +1,20 @@
-from datetime import datetime
+from datetime import datetime, timezone
+import typing
 
 from . import matching, scoring, time_estimates, feedback
 
-def zxcvbn(password, user_inputs=None):
-    try:
-        # Python 2 string types
-        basestring = (str, unicode)
-    except NameError:
-        # Python 3 string types
-        basestring = (str, bytes)
+def zxcvbn(password: str, user_inputs: typing.List[str] = None) -> typing.Dict[str, typing.Any]:
 
-    if user_inputs is None:
-        user_inputs = []
+    start = datetime.now(timezone.utc)
 
-    start = datetime.now()
-
-    sanitized_inputs = []
-    for arg in user_inputs:
-        if not isinstance(arg, basestring):
-            arg = str(arg)
-        sanitized_inputs.append(arg.lower())
+    sanitized_inputs = [s.lower() for s in user_inputs or [] if s]
 
     ranked_dictionaries = matching.RANKED_DICTIONARIES
     ranked_dictionaries['user_inputs'] = matching.build_ranked_dict(sanitized_inputs)
 
     matches = matching.omnimatch(password, ranked_dictionaries)
     result = scoring.most_guessable_match_sequence(password, matches)
-    result['calc_time'] = datetime.now() - start
+    result['calc_time'] = datetime.now(timezone.utc) - start
 
     attack_times = time_estimates.estimate_attack_times(result['guesses'])
     for prop, val in attack_times.items():
