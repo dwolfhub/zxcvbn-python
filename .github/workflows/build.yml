@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, 3.9]
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
     - uses: actions/checkout@master
     - name: set up Python ${{ matrix.python-version }}
@@ -21,7 +21,6 @@ jobs:
         pip install -r requirements.txt
         pip install .
     - name: Run mypy
-      if: "matrix.python-version != '2.7' && matrix.python-version != 'pypy2'"
       run: |
           pip install -U mypy
           mypy -p zxcvbn --ignore-missing-imports
