@@ -7,7 +7,7 @@ def zxcvbn(password: str, user_inputs: typing.List[str] = None) -> typing.Dict[s
 
     start = datetime.now(timezone.utc)
 
-    sanitized_inputs = [s.lower() for s in user_inputs or [] if s]
+    sanitized_inputs = list({s.lower() for s in user_inputs or [] if s})
 
     ranked_dictionaries = matching.RANKED_DICTIONARIES
     ranked_dictionaries['user_inputs'] = matching.build_ranked_dict(sanitized_inputs)
