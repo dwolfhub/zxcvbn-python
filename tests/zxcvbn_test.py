@@ -24,3 +24,15 @@ def test_long_password():
     password = "weopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioej"
 
     zxcvbn(password, user_inputs=[input_])
+
+
+def test_dictionary_password():
+    # return the correct error message for a english match
+    input_ = None
+    password = "musculature"
+
+    result = zxcvbn(password, user_inputs=[input_])
+
+    assert result["feedback"]["warning"] == \
+           "A word by itself is easy to guess.", \
+           "Gives specific error for single-word passwords"
