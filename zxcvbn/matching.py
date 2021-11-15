@@ -1,3 +1,5 @@
+import typing
+
 from zxcvbn import scoring
 from . import adjacency_graphs
 from zxcvbn.frequency_lists import FREQUENCY_LISTS
@@ -637,16 +639,17 @@ def map_ints_to_dmy(ints):
             }
 
 
-def map_ints_to_dm(ints):
+def map_ints_to_dm(ints: typing.List[int]) -> typing.Optional[typing.Dict[str, int]]:
     for d, m in [ints, reversed(ints)]:
         if 1 <= d <= 31 and 1 <= m <= 12:
             return {
                 'day': d,
                 'month': m,
             }
+    return None
 
 
-def two_to_four_digit_year(year):
+def two_to_four_digit_year(year: int) -> int:
     if year > 99:
         return year
     elif year > 50:
