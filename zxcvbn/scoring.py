@@ -201,13 +201,13 @@ def most_guessable_match_sequence(password: str, matches: List[PasswordMatch], _
                 update(m, 1)
         bruteforce_update(k)
 
-    optimal_match_sequence = unwind(n)
-    optimal_l = len(optimal_match_sequence)
-
     # corner: empty password
     if len(password) == 0:
+        optimal_match_sequence = []
         guesses = 1
     else:
+        optimal_match_sequence = unwind(n)
+        optimal_l = len(optimal_match_sequence)
         guesses = optimal['g'][n - 1][optimal_l]
 
     # final result object
