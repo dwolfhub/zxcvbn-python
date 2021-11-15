@@ -218,9 +218,9 @@ def test_l33t_matching():
         ['', {}],
         ['abcdefgo123578!#$&*)]}>', {}],
         ['a', {}],
-        ['4', {'a': ['4']}],
-        ['4@', {'a': ['4', '@']}],
-        ['4({60', {'a': ['4'], 'c': ['(', '{'], 'g': ['6'], 'o': ['0']}],
+        ['4', {'a': {'4'}}],
+        ['4@', {'a': {'4', '@'}}],
+        ['4({60', {'a': {'4'}, 'c': {'(', '{'}, 'g': {'6'}, 'o': {'0'}}],
     ]:
         msg = "reduces l33t table to only the substitutions that a password might be employing"
         assert matching.relevant_l33t_subtable(pw, test_table) == expected, msg
