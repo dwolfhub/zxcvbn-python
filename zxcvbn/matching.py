@@ -293,7 +293,7 @@ def repeat_match(
                 "base_token": base_token,
                 "base_guesses": base_guesses,
                 "base_matches": base_matches,
-                "repeat_count": len(match.group(0)) / len(base_token),
+                "repeat_count": len(match.group(0)) // len(base_token),
             }
         )
         last_index = j + 1
