@@ -280,7 +280,8 @@ def test_spatial_guesses():
         'turns': 1,
         'shifted_count': 0,
     }
-    base_guesses = (
+    base_guesses = int(
+        0.5 +
         scoring.KEYBOARD_STARTING_POSITIONS *
         scoring.KEYBOARD_AVERAGE_DEGREE *
         # - 1 term because: not counting spatial patterns of length 1
@@ -317,7 +318,7 @@ def test_spatial_guesses():
     d = scoring.KEYBOARD_AVERAGE_DEGREE
     for i in range(2, L + 1):
         for j in range(1, min(match['turns'], i - 1) + 1):
-            guesses += scoring.nCk(i - 1, j - 1) * s * pow(d, j)
+            guesses += int(scoring.nCk(i - 1, j - 1) * s * pow(d, j))
 
     msg = "spatial guesses accounts for turn positions, directions and " \
           "starting keys"

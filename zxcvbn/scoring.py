@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Union, Callable
 
 
 def calc_average_degree(graph: AdjacencyGraph) -> float:
-    average = sum(len(n) for n in graph.values() if n)
+    average = sum(len(n) - n.count(None) for n in graph.values())
 
     return average / float(len(graph))
 
@@ -341,7 +341,7 @@ def spatial_guesses(match: PasswordMatch) -> int:
     else:
         s = KEYPAD_STARTING_POSITIONS
         d = KEYPAD_AVERAGE_DEGREE
-    guesses = 0.0
+    guesses = 0
     L = len(match['token'])
     t = match['turns']
     # estimate the number of possible patterns w/ length L or less with t turns
@@ -349,7 +349,7 @@ def spatial_guesses(match: PasswordMatch) -> int:
     for i in range(2, L + 1):
         possible_turns = min(t, i - 1) + 1
         for j in range(1, possible_turns):
-            guesses += nCk(i - 1, j - 1) * s * pow(d, j)
+            guesses += int(nCk(i - 1, j - 1) * s * d**j)
     # add extra guesses for shifted keys. (% instead of 5, A instead of a.)
     # math is similar to extra guesses of l33t substitutions in dictionary
     # matches.
@@ -364,7 +364,7 @@ def spatial_guesses(match: PasswordMatch) -> int:
                 shifted_variations += nCk(S + U, i)
             guesses *= shifted_variations
 
-    return int(guesses)
+    return guesses
 
 
 START_UPPER = re.compile(r'^[A-Z][^A-Z]+$')
