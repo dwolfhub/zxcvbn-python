@@ -1,4 +1,5 @@
 import time
+from datetime import timedelta
 from decimal import Decimal
 from typing import Any, Dict, Iterable, List, TypedDict
 
@@ -14,7 +15,7 @@ def zxcvbn(password: str, user_inputs: Iterable[str] = None) -> types.Feedback:
 
     matches = matching.omnimatch(password, ranked_dictionaries)
     result = scoring.most_guessable_match_sequence(password, matches)
-    result['calc_time'] = time.perf_counter() - start
+    result['calc_time'] = timedelta(microseconds=1e6 * (time.perf_counter() - start))
 
     attack_times = time_estimates.estimate_attack_times(result["guesses"])
     for prop, val in attack_times.items():
