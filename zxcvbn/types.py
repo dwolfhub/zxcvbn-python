@@ -1,6 +1,6 @@
 from datetime import timedelta
 from decimal import Decimal
-from typing import *
+from typing import Any, Dict, List, Match, Optional, Set, TypedDict
 
 AdjacencyGraph = Dict[str, Optional[str]]
 RankedDict = Dict[str, int]
