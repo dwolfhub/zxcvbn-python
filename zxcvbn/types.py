@@ -1,22 +1,24 @@
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Match, Optional, Set, TypedDict
+from typing import Any, Dict, List, Match, Optional, Set, Tuple, TypedDict
 
-AdjacencyGraph = Dict[str, Optional[str]]
+AdjacencyGraph = Dict[str, List[Optional[str]]]
 RankedDict = Dict[str, int]
 SubstitutionTable = Dict[str, Set[str]]
+SubstitutionDict = Dict[str, str]
 
 
 class PasswordMatchBase(TypedDict):
     token: str  # matched token
     pattern: str  # type of match
-    guesses: int
-    guesses_log10: float
     i: int
     j: int
 
 
 class PasswordMatch(PasswordMatchBase, total=False):
+    guesses: int
+    guesses_log10: float
+
     base_guesses: int
     dictionary_name: str
     matched_word: str
@@ -34,7 +36,7 @@ class PasswordMatch(PasswordMatchBase, total=False):
 
     repeat_count: int
     base_token: str
-    base_matches: Dict[str, Any] # best we can do without cyclic definition
+    base_matches: List[Any]  # List[PasswordMatch] but mypy doesn't support cyclic definition
 
     ascending: bool
     sequence_name: str
@@ -55,13 +57,15 @@ class Feedback(TypedDict):
     warning: str
 
 
-class Result(TypedDict):
+class ResultBase(TypedDict):
     password: str
+    sequence: List[PasswordMatch]
+    guesses: int
+    guesses_log10: float
+
+class Result(ResultBase):
     score: int
     feedback: Feedback
-    sequence: List[PasswordMatch]
-    guesses: Decimal
-    guesses_log10: float
     calc_time: timedelta
     crack_times_seconds: Dict[str, Decimal]
     crack_times_display: Dict[str, str]

@@ -1,10 +1,12 @@
-from zxcvbn.types import Feedback, PasswordMatch
-from zxcvbn.scoring import START_UPPER, ALL_UPPER
-from gettext import gettext as _
 from decimal import Decimal
+from gettext import gettext as _
 from typing import Dict, List, Union
 
-from .types import PasswordMatch, Feedback
+from zxcvbn.scoring import ALL_UPPER, START_UPPER
+from zxcvbn.types import Feedback, PasswordMatch
+
+from .types import Feedback, PasswordMatch
+
 
 def get_feedback(score: int, sequence: List[PasswordMatch]) -> Feedback:
     if len(sequence) == 0:

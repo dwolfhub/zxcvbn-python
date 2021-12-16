@@ -1,12 +1,12 @@
 import re
 from decimal import Decimal
 from re import Match, Pattern
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, Callable
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from . import adjacency_graphs, scoring
 from .frequency_lists import FREQUENCY_LISTS
 from .scoring import most_guessable_match_sequence
-from .types import RankedDict, SubstitutionTable, AdjacencyGraph, PasswordMatch
+from .types import AdjacencyGraph, PasswordMatch, RankedDict, SubstitutionDict, SubstitutionTable
 
 
 def build_ranked_dict(ordered_list: List[str]) -> RankedDict:
@@ -72,7 +72,7 @@ def omnimatch(
 ) -> List[PasswordMatch]:
     matches: List[PasswordMatch] = []
     matcher: Callable[..., List[PasswordMatch]]
-    for matcher in [
+    for matcher in [  # type: ignore # https://github.com/python/mypy/issues/10740
         dictionary_match,
         reverse_dictionary_match,
         l33t_match,
@@ -149,10 +149,10 @@ def relevant_l33t_subtable(
 
     return subtable
 
-
-def enumerate_l33t_subs(table: SubstitutionTable) -> List[Dict[str, str]]:
-    def dedup(subs: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
-        deduped: List[Tuple[str, str]] = []
+def enumerate_l33t_subs(table: SubstitutionTable) -> List[SubstitutionDict]:
+    Subs = List[List[Tuple[str, str]]]
+    def dedup(subs: Subs) -> Subs:
+        deduped: Subs = []
         members = {}
         for sub in subs:
             assoc = [(k, v) for v, k in sub]
@@ -165,13 +165,13 @@ def enumerate_l33t_subs(table: SubstitutionTable) -> List[Dict[str, str]]:
         return deduped
 
     def helper(
-        keys: List[str], subs: List[List[Tuple[str, str]]]
-    ) -> List[List[Tuple[str, str]]]:
+        keys: List[str], subs: Subs
+    ) -> Subs:
         if not keys:
             return subs
 
         first_key = keys[0]
-        next_subs: List[Tuple[str, str]] = []
+        next_subs: Subs = []
         for l33t_chr in table[first_key]:
             for sub in subs:
                 dup_l33t_index = -1
@@ -258,12 +258,13 @@ def repeat_match(
         greedy_match = greedy.search(password, pos=last_index)
         lazy_match = lazy.search(password, pos=last_index)
 
-        if not greedy_match:
+        if not greedy_match or not lazy_match:
             break
 
-        assert greedy_match is not None
+        g = greedy_match.group(0)
+        l = lazy_match.group(0)
 
-        if len(greedy_match.group(0)) > len(lazy_match.group(0)):
+        if len(g) > len(l):
             # greedy beats lazy for 'aabaab'
             #   greedy: [aabaab, aab]
             #   lazy:   [aa,     a]
@@ -272,7 +273,9 @@ def repeat_match(
             # aabaab in aabaabaabaab.
             # run an anchored lazy match on greedy's repeated string
             # to find the shortest repeated string
-            base_token = lazy_anchored.search(match.group(0)).group(1)
+            anchored_match = lazy_anchored.search(g)
+            assert anchored_match is not None
+            base_token = anchored_match.group(1)
         else:
             assert lazy_match is not None
             match = lazy_match
@@ -322,7 +325,7 @@ def spatial_match_helper(
     graph: AdjacencyGraph,
     graph_name: str,
 ) -> List[PasswordMatch]:
-    matches = []
+    matches: List[PasswordMatch] = []
     i = 0
     while i < len(password) - 1:
         j = i + 1
@@ -651,12 +654,14 @@ def map_ints_to_dmy(ints: List[int]) -> Optional[Dict[str, int]]:
             y = two_to_four_digit_year(y)
             return {"year": y, "month": dm["month"], "day": dm["day"]}
 
+    return None
+
 
 def map_ints_to_dm(ints: List[int]) -> Optional[Dict[str, int]]:
     for d, m in [ints, reversed(ints)]:
         if 1 <= d <= 31 and 1 <= m <= 12:
             return {"day": d, "month": m}
-        
+
     return None
 
 

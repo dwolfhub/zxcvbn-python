@@ -1,8 +1,8 @@
 import argparse
+import getpass
 import json
 import select
 import sys
-import getpass
 
 from . import zxcvbn
 

@@ -1,5 +1,6 @@
-from decimal import Decimal, Context, Inexact
+from decimal import Context, Decimal, Inexact
 from typing import Dict, Union
+
 
 def estimate_attack_times(guesses: Union[Decimal, int]) -> Dict[str, Union[Dict[str, Decimal], Dict[str, str], int]]:
     crack_times_seconds = {
