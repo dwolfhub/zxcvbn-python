@@ -7,8 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # supported python versions can be found here
-        # https://github.com/actions/python-versions/releases
         python-version: [3.8, 3.9, "3.10"]
     steps:
     - uses: actions/checkout@master
