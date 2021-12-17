@@ -16,7 +16,7 @@ time.
 
 Features
 --------
-- **Tested in Python versions 3.6-3.9**
+- **Tested in Python versions 3.6-3.10**
 - **For python 2 support, please use zxcvbn<5**
 - Accepts user data to be added to the dictionaries that are tested against (name, birthdate, etc)
 - Gives a score to the password, from 0 (terrible) to 4 (great)
