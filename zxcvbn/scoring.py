@@ -1,20 +1,17 @@
-from math import log, factorial
-
 import re
+from decimal import Decimal
+from math import factorial, log
+from re import Match
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from .adjacency_graphs import ADJACENCY_GRAPHS
+from .types import AdjacencyGraph, PasswordMatch, Result, ResultBase
 
-from decimal import Decimal
 
+def calc_average_degree(graph: AdjacencyGraph) -> float:
+    average = sum(len(n) - n.count(None) for n in graph.values())
 
-def calc_average_degree(graph):
-    average = 0
-
-    for key, neighbors in graph.items():
-        average += len([n for n in neighbors if n])
-    average /= float(len(graph.items()))
-
-    return average
+    return average / float(len(graph))
 
 
 BRUTEFORCE_CARDINALITY = 10
@@ -26,7 +23,7 @@ MIN_YEAR_SPACE = 20
 REFERENCE_YEAR = 2017
 
 
-def nCk(n, k):
+def nCk(n: int, k: int) -> int:
     """http://blog.plover.com/math/choose.html"""
     if k > n:
         return 0
@@ -36,7 +33,7 @@ def nCk(n, k):
     r = 1
     for d in range(1, k + 1):
         r *= n
-        r /= d
+        r //= d
         n -= 1
 
     return r
@@ -74,11 +71,11 @@ def nCk(n, k):
 #    D^(l-1) approximates Sum(D^i for i in [1..l-1]
 #
 # ------------------------------------------------------------------------------
-def most_guessable_match_sequence(password, matches, _exclude_additive=False):
+def most_guessable_match_sequence(password: str, matches: List[PasswordMatch], _exclude_additive: bool=False) -> ResultBase:
     n = len(password)
 
     # partition matches into sublists according to ending index j
-    matches_by_j = [[] for _ in range(n)]
+    matches_by_j: List[List[PasswordMatch]] = [[] for _ in range(n)]
     try:
         for m in matches:
             matches_by_j[m['j']].append(m)
@@ -88,7 +85,7 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
     for lst in matches_by_j:
         lst.sort(key=lambda m1: m1['i'])
 
-    optimal = {
+    optimal: Dict[str, List[Dict[int, Any]]] = {
         # optimal.m[k][l] holds final match in the best length-l match sequence
         # covering the password prefix up to k, inclusive.
         # if there is no length-l sequence that scores better (fewer guesses)
@@ -201,13 +198,13 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
                 update(m, 1)
         bruteforce_update(k)
 
-    optimal_match_sequence = unwind(n)
-    optimal_l = len(optimal_match_sequence)
-
     # corner: empty password
     if len(password) == 0:
+        optimal_match_sequence = []
         guesses = 1
     else:
+        optimal_match_sequence = unwind(n)
+        optimal_l = len(optimal_match_sequence)
         guesses = optimal['g'][n - 1][optimal_l]
 
     # final result object
@@ -219,9 +216,9 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
     }
 
 
-def estimate_guesses(match, password):
-    if match.get('guesses', False):
-        return Decimal(match['guesses'])
+def estimate_guesses(match: PasswordMatch, password: str) -> int:
+    if 'guesses' in match:
+        return match['guesses']
 
     min_guesses = 1
     if len(match['token']) < len(password):
@@ -230,7 +227,7 @@ def estimate_guesses(match, password):
         else:
             min_guesses = MIN_SUBMATCH_GUESSES_MULTI_CHAR
 
-    estimation_functions = {
+    estimation_functions: Dict[str, Callable[[PasswordMatch], int]] = {
         'bruteforce': bruteforce_guesses,
         'dictionary': dictionary_guesses,
         'spatial': spatial_guesses,
@@ -240,14 +237,14 @@ def estimate_guesses(match, password):
         'date': date_guesses,
     }
 
-    guesses = estimation_functions[match['pattern']](match)
-    match['guesses'] = max(guesses, min_guesses)
-    match['guesses_log10'] = log(match['guesses'], 10)
+    guesses = max(min_guesses, estimation_functions[match['pattern']](match))
+    match['guesses'] = guesses
+    match['guesses_log10'] = log(guesses, 10)
 
-    return Decimal(match['guesses'])
+    return guesses
 
 
-def bruteforce_guesses(match):
+def bruteforce_guesses(match: PasswordMatch) -> int:
     guesses = BRUTEFORCE_CARDINALITY ** len(match['token'])
     # small detail: make bruteforce matches at minimum one guess bigger than
     # smallest allowed submatch guesses, such that non-bruteforce submatches
@@ -260,7 +257,7 @@ def bruteforce_guesses(match):
     return max(guesses, min_guesses)
 
 
-def dictionary_guesses(match):
+def dictionary_guesses(match: PasswordMatch) -> int:
     # keep these as properties for display purposes
     match['base_guesses'] = match['rank']
     match['uppercase_variations'] = uppercase_variations(match)
@@ -271,11 +268,11 @@ def dictionary_guesses(match):
         match['l33t_variations'] * reversed_variations
 
 
-def repeat_guesses(match):
-    return match['base_guesses'] * Decimal(match['repeat_count'])
+def repeat_guesses(match: PasswordMatch) -> int:
+    return match['base_guesses'] * match['repeat_count']
 
 
-def sequence_guesses(match):
+def sequence_guesses(match: PasswordMatch) -> int:
     first_chr = match['token'][:1]
     # lower guesses for obvious starting points
     if first_chr in ['a', 'A', 'z', 'Z', '0', '1', '9']:
@@ -294,7 +291,7 @@ def sequence_guesses(match):
     return base_guesses * len(match['token'])
 
 
-def regex_guesses(match):
+def regex_guesses(match: PasswordMatch) -> int:
     char_class_bases = {
         'alpha_lower': 26,
         'alpha_upper': 26,
@@ -313,9 +310,11 @@ def regex_guesses(match):
         year_space = max(year_space, MIN_YEAR_SPACE)
 
         return year_space
+    else:
+        raise RuntimeError("Invalid regex_name")
 
 
-def date_guesses(match):
+def date_guesses(match: PasswordMatch) -> int:
     year_space = max(abs(match['year'] - REFERENCE_YEAR), MIN_YEAR_SPACE)
     guesses = year_space * 365
     if match.get('separator', False):
@@ -324,15 +323,15 @@ def date_guesses(match):
     return guesses
 
 
-KEYBOARD_AVERAGE_DEGREE = calc_average_degree(ADJACENCY_GRAPHS['qwerty'])
+KEYBOARD_AVERAGE_DEGREE = calc_average_degree(ADJACENCY_GRAPHS['qwerty']) # type: ignore
 # slightly different for keypad/mac keypad, but close enough
-KEYPAD_AVERAGE_DEGREE = calc_average_degree(ADJACENCY_GRAPHS['keypad'])
+KEYPAD_AVERAGE_DEGREE = calc_average_degree(ADJACENCY_GRAPHS['keypad']) # type: ignore
 
 KEYBOARD_STARTING_POSITIONS = len(ADJACENCY_GRAPHS['qwerty'].keys())
 KEYPAD_STARTING_POSITIONS = len(ADJACENCY_GRAPHS['keypad'].keys())
 
 
-def spatial_guesses(match):
+def spatial_guesses(match: PasswordMatch) -> int:
     if match['graph'] in ['qwerty', 'dvorak']:
         s = KEYBOARD_STARTING_POSITIONS
         d = KEYBOARD_AVERAGE_DEGREE
@@ -347,7 +346,7 @@ def spatial_guesses(match):
     for i in range(2, L + 1):
         possible_turns = min(t, i - 1) + 1
         for j in range(1, possible_turns):
-            guesses += nCk(i - 1, j - 1) * s * pow(d, j)
+            guesses += int(nCk(i - 1, j - 1) * s * d**j)
     # add extra guesses for shifted keys. (% instead of 5, A instead of a.)
     # math is similar to extra guesses of l33t substitutions in dictionary
     # matches.
@@ -371,7 +370,7 @@ ALL_UPPER = re.compile(r'^[^a-z]+$')
 ALL_LOWER = re.compile(r'^[^A-Z]+$')
 
 
-def uppercase_variations(match):
+def uppercase_variations(match: PasswordMatch) -> int:
     word = match['token']
 
     if ALL_LOWER.match(word) or word.lower() == word:
@@ -390,7 +389,7 @@ def uppercase_variations(match):
     return variations
 
 
-def l33t_variations(match):
+def l33t_variations(match: PasswordMatch) -> int:
     if not match.get('l33t', False):
         return 1
 

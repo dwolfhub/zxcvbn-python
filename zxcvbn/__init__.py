@@ -1,38 +1,27 @@
-from datetime import datetime
+import time
+from datetime import timedelta
+from decimal import Decimal
+from typing import Any, Dict, Iterable, List, Optional, TypedDict
 
-from . import matching, scoring, time_estimates, feedback
+from . import feedback, matching, scoring, time_estimates, types
 
-def zxcvbn(password, user_inputs=None):
-    try:
-        # Python 2 string types
-        basestring = (str, unicode)
-    except NameError:
-        # Python 3 string types
-        basestring = (str, bytes)
 
-    if user_inputs is None:
-        user_inputs = []
+def zxcvbn(password: str, user_inputs: Optional[Iterable[str]] = None) -> types.Result:
+    start = time.perf_counter()
 
-    start = datetime.now()
-
-    sanitized_inputs = []
-    for arg in user_inputs:
-        if not isinstance(arg, basestring):
-            arg = str(arg)
-        sanitized_inputs.append(arg.lower())
-
+    # Find unique non-empty user inputs, lower-cased, preserving original order
+    sanitized_inputs = list(dict.fromkeys(s.lower() for s in user_inputs or [] if s))
     ranked_dictionaries = matching.RANKED_DICTIONARIES
-    ranked_dictionaries['user_inputs'] = matching.build_ranked_dict(sanitized_inputs)
+    ranked_dictionaries["user_inputs"] = matching.build_ranked_dict(sanitized_inputs)
 
     matches = matching.omnimatch(password, ranked_dictionaries)
-    result = scoring.most_guessable_match_sequence(password, matches)
-    result['calc_time'] = datetime.now() - start
+    result: types.Result = scoring.most_guessable_match_sequence(password, matches)  # type: ignore
+    result['calc_time'] = timedelta(microseconds=1e6 * (time.perf_counter() - start))
 
-    attack_times = time_estimates.estimate_attack_times(result['guesses'])
+    attack_times = time_estimates.estimate_attack_times(result["guesses"])
     for prop, val in attack_times.items():
-        result[prop] = val
+        result[prop] = val  # type: ignore
 
-    result['feedback'] = feedback.get_feedback(result['score'],
-                                               result['sequence'])
+    result["feedback"] = feedback.get_feedback(result["score"], result["sequence"])
 
     return result
