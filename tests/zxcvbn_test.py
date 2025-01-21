@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 from zxcvbn import zxcvbn
 
 
@@ -23,7 +24,9 @@ def test_long_password():
     input_ = None
     password = "weopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioej"
 
-    zxcvbn(password, user_inputs=[input_])
+    # Function should raise ValueError for input exceeding 72 chars
+    with pytest.raises(ValueError, match="Password length exceeds 72 characters"):
+        zxcvbn(password, user_inputs=[input_])
 
 
 def test_dictionary_password():
