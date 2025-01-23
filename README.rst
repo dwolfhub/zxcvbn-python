@@ -103,6 +103,18 @@ Output:
         }],
     }
 
+To override the default maximum password length of 72 characters, set the
+``ZXCVBN_MAX_LENGTH`` environment variable:
+
+.. code-block:: bash
+
+   export ZXCVBN_MAX_LENGTH=128
+
+.. warning::
+   We strongly advise against setting ``ZXCVBN_MAX_LENGTH`` to a value greater than 72,
+   as it can lead to long processing times and may leave server-side applications open
+   to denial-of-service scenarios.
+
 
 Custom Ranked Dictionaries
 --------------------------
@@ -120,6 +132,7 @@ In order to support more languages or just add password dictionaries of your own
 
 These lists will be added to the current ones, but you can also overwrite the current ones if you wish.
 The lists you add should be in order of how common the word is used with the most common words appearing first.
+
 
 CLI
 ~~~
