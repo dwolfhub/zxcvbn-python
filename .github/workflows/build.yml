@@ -7,17 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version:
-          [
-            "3.6.15",
-            "3.7.17",
-            "3.8.18",
-            "3.9.21",
-            "3.10.16",
-            "3.11.11",
-            "3.12.8",
-            "3.13.0",
-          ]
+        python-version: ["3.8.18", "3.9.21", "3.10.16", "3.11.11"]
     steps:
       - uses: actions/checkout@master
       - name: set up Python ${{ matrix.python-version }}
