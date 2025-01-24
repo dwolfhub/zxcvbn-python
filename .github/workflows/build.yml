@@ -27,7 +27,4 @@ jobs:
           mypy -p zxcvbn --ignore-missing-imports
       - name: Run tests
         run: |
-          pytest -v
-      - name: Test Compatibility
-        run: |
           tox
