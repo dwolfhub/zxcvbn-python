@@ -173,6 +173,10 @@ def most_guessable_match_sequence(password, matches, _exclude_additive=False):
     # helper: step backwards through optimal.m starting at the end,
     # constructing the final optimal match sequence.
     def unwind(n):
+        if n == 0:
+            # return empty list for zero-length password
+            return []
+
         optimal_match_sequence = []
         k = n - 1
         # find the final best sequence length and score
