@@ -36,3 +36,12 @@ def test_dictionary_password():
     assert result["feedback"]["warning"] == \
            "A word by itself is easy to guess.", \
            "Gives specific error for single-word passwords"
+
+def test_empty_password():
+    input_ = None
+    password = ""
+
+    try:
+      zxcvbn(password, user_inputs=[input_])
+    except IndexError as ie:
+        assert False, "Empty password raised IndexError"
