@@ -23,7 +23,6 @@ jobs:
           pip install .
           pip install tox
       - name: Run mypy
-        if: "matrix.python-version != '2.7' && matrix.python-version != 'pypy2'"
         run: |
           pip install -U mypy
           mypy -p zxcvbn --ignore-missing-imports
