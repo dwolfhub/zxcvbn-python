@@ -21,10 +21,7 @@ def zxcvbn(password, user_inputs=None):
             arg = str(arg)
         sanitized_inputs.append(arg.lower())
 
-    ranked_dictionaries = matching.RANKED_DICTIONARIES
-    ranked_dictionaries['user_inputs'] = matching.build_ranked_dict(sanitized_inputs)
-
-    matches = matching.omnimatch(password, ranked_dictionaries)
+    matches = matching.omnimatch(password, sanitized_inputs)
     result = scoring.most_guessable_match_sequence(password, matches)
     result['calc_time'] = datetime.now() - start
 

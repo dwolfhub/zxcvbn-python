@@ -1,23 +1,8 @@
-from zxcvbn import scoring
-from . import adjacency_graphs
-from zxcvbn.frequency_lists import FREQUENCY_LISTS
+from . import scoring, adjacency_graphs, util
 import re
 
 from zxcvbn.scoring import most_guessable_match_sequence
 
-
-def build_ranked_dict(ordered_list):
-    return {word: idx for idx, word in enumerate(ordered_list, 1)}
-
-RANKED_DICTIONARIES = {}
-
-
-def add_frequency_lists(frequency_lists_):
-    for name, lst in frequency_lists_.items():
-        RANKED_DICTIONARIES[name] = build_ranked_dict(lst)
-
-
-add_frequency_lists(FREQUENCY_LISTS)
 
 GRAPHS = {
     'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty'],
@@ -75,8 +60,16 @@ DATE_SPLITS = {
 
 
 # omnimatch -- perform all matches
-def omnimatch(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def omnimatch(password, user_input=[]):
     matches = []
+    _ranked_dictionaries = {}
+    from zxcvbn.frequency_lists import FREQUENCY_LISTS
+
+    for name, lst in FREQUENCY_LISTS.items():
+        _ranked_dictionaries[name] = util.build_ranked_dict(lst)
+
+    _ranked_dictionaries['user_input'] = util.build_ranked_dict(user_input)
+
     for matcher in [
         dictionary_match,
         reverse_dictionary_match,
@@ -93,7 +86,7 @@ def omnimatch(password, _ranked_dictionaries=RANKED_DICTIONARIES):
 
 
 # dictionary match (common passwords, english, last names, etc)
-def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def dictionary_match(password, _ranked_dictionaries={}):
     matches = []
     length = len(password)
     password_lower = password.lower()
@@ -119,7 +112,7 @@ def dictionary_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
 
 
 def reverse_dictionary_match(password,
-                             _ranked_dictionaries=RANKED_DICTIONARIES):
+                             _ranked_dictionaries={}):
     reversed_password = ''.join(reversed(password))
     matches = dictionary_match(reversed_password, _ranked_dictionaries)
     for match in matches:
@@ -212,7 +205,7 @@ def translate(string, chr_map):
     return ''.join(chars)
 
 
-def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
+def l33t_match(password, _ranked_dictionaries={},
                _l33t_table=L33T_TABLE):
     matches = []
 
@@ -222,7 +215,7 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
             break
 
         subbed_password = translate(password, sub)
-        for match in dictionary_match(subbed_password, _ranked_dictionaries):
+        for match in dictionary_match(subbed_password, _ranked_dictionaries=_ranked_dictionaries):
             token = password[match['i']:match['j'] + 1]
             if token.lower() == match['matched_word']:
                 # only return the matches that contain an actual substitution
@@ -247,7 +240,7 @@ def l33t_match(password, _ranked_dictionaries=RANKED_DICTIONARIES,
 
 
 # repeats (aaa, abcabcabc) and sequences (abcdef)
-def repeat_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def repeat_match(password, _ranked_dictionaries={}):
     matches = []
     greedy = re.compile(r'(.+)\1+')
     lazy = re.compile(r'(.+?)\1+')
@@ -298,7 +291,7 @@ def repeat_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     return matches
 
 
-def spatial_match(password, _graphs=GRAPHS, _ranked_dictionaries=RANKED_DICTIONARIES):
+def spatial_match(password, _graphs=GRAPHS, _ranked_dictionaries={}):
     matches = []
     for graph_name, graph in _graphs.items():
         matches.extend(spatial_match_helper(password, graph, graph_name))
@@ -379,7 +372,7 @@ def spatial_match_helper(password, graph, graph_name):
 MAX_DELTA = 5
 
 
-def sequence_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def sequence_match(password, _ranked_dictionaries={}):
     # Identifies sequences by looking for repeated differences in unicode codepoint.
     # this allows skipping, such as 9753, and also matches some extended unicode sequences
     # such as Greek and Cyrillic alphabets.
@@ -440,7 +433,7 @@ def sequence_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
     return result
 
 
-def regex_match(password, _regexen=REGEXEN, _ranked_dictionaries=RANKED_DICTIONARIES):
+def regex_match(password, _regexen=REGEXEN, _ranked_dictionaries={}):
     matches = []
     for name, regex in _regexen.items():
         for rx_match in regex.finditer(password):
@@ -456,7 +449,7 @@ def regex_match(password, _regexen=REGEXEN, _ranked_dictionaries=RANKED_DICTIONA
     return sorted(matches, key=lambda x: (x['i'], x['j']))
 
 
-def date_match(password, _ranked_dictionaries=RANKED_DICTIONARIES):
+def date_match(password, _ranked_dictionaries={}):
     # a "date" is recognized as:
     #   any 3-tuple that starts or ends with a 2- or 4-digit year,
     #   with 2 or 0 separator chars (1.1.91 or 1191),
