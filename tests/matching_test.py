@@ -2,6 +2,11 @@ from unittest import TestCase
 
 from zxcvbn import adjacency_graphs
 from zxcvbn import matching
+from zxcvbn.frequency_lists import FREQUENCY_LISTS
+
+
+_ranked_dictionaries = {}
+matching.add_frequency_lists(FREQUENCY_LISTS, _ranked_dictionaries)
 
 
 # takes a pattern and list of prefixes/suffixes
@@ -70,10 +75,10 @@ def test_build_ranked_dict():
 def test_add_frequency_lists():
     matching.add_frequency_lists({
         'test_words': ['qidkviflkdoejjfkd', 'sjdshfidssdkdjdhfkl']
-    })
+    }, _ranked_dictionaries)
 
-    assert 'test_words' in matching.RANKED_DICTIONARIES
-    assert matching.RANKED_DICTIONARIES['test_words'] == {
+    assert 'test_words' in _ranked_dictionaries
+    assert _ranked_dictionaries['test_words'] == {
         'qidkviflkdoejjfkd': 1,
         'sjdshfidssdkdjdhfkl': 2,
     }
@@ -175,7 +180,7 @@ def test_dictionary_matching():
                           })
 
     # test the default dictionaries
-    matches = matching.dictionary_match('wow')
+    matches = matching.dictionary_match('wow', _ranked_dictionaries)
     patterns = ['wow']
     ijs = [[0, 2]]
     msg = "default dictionaries"
@@ -284,7 +289,7 @@ def test_l33t_matching():
     assert lm('p4@ssword') == [], msg
 
     msg = "doesn't match single-character l33ted words"
-    matches = matching.l33t_match('4 1 @')
+    matches = matching.l33t_match('4 1 @', _ranked_dictionaries)
     assert matches == [], msg
 
     # known issue: subsets of substitutions aren't tried.
@@ -300,7 +305,7 @@ def test_l33t_matching():
 def test_spatial_matching():
     for password in ['', '/', 'qw', '*/']:
         msg = "doesn't match 1- and 2-character spatial patterns"
-        assert matching.spatial_match(password) == [], msg
+        assert matching.spatial_match(password, _ranked_dictionaries) == [], msg
 
     # for testing, make a subgraph that contains a single keyboard
     _graphs = {'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty']}
@@ -346,9 +351,9 @@ def test_spatial_matching():
 def test_sequence_matching():
     for password in ['', 'a', '1']:
         msg = "doesn't match length-#{len(password)} sequences"
-        assert matching.sequence_match(password) == [], msg
+        assert matching.sequence_match(password, _ranked_dictionaries) == [], msg
 
-    matches = matching.sequence_match('abcbabc')
+    matches = matching.sequence_match('abcbabc', _ranked_dictionaries)
     msg = "matches overlapping patterns"
     check_matches(msg, matches, 'sequence', ['abc', 'cba', 'abc'],
                   [[0, 2], [2, 4], [4, 6]],
@@ -358,7 +363,7 @@ def test_sequence_matching():
     suffixes = ['!', '22']
     pattern = 'jihg'
     for password, i, j in genpws(pattern, prefixes, suffixes):
-        matches = matching.sequence_match(password)
+        matches = matching.sequence_match(password, _ranked_dictionaries)
         msg = 'matches embedded sequence patterns'
         check_matches(msg, matches, 'sequence', [pattern], [[i, j]],
                       {
@@ -381,7 +386,7 @@ def test_sequence_matching():
         ['0369', 'digits', True],
         ['97531', 'digits', False],
     ]:
-        matches = matching.sequence_match(pattern)
+        matches = matching.sequence_match(pattern, _ranked_dictionaries)
         msg = "matches '#{pattern}' as a '#{name}' sequence"
         check_matches(msg, matches, 'sequence', [pattern],
                       [[0, len(pattern) - 1]],
@@ -394,14 +399,14 @@ def test_sequence_matching():
 def test_repeat_matching():
     for password in ['', '#']:
         msg = "doesn't match length-%s repeat patterns" % len(password)
-        assert matching.repeat_match(password) == [], msg
+        assert matching.repeat_match(password, _ranked_dictionaries) == [], msg
 
     # test single-character repeats
     prefixes = ['@', 'y4@']
     suffixes = ['u', 'u%7']
     pattern = '&&&&&'
     for password, i, j in genpws(pattern, prefixes, suffixes):
-        matches = matching.repeat_match(password)
+        matches = matching.repeat_match(password, _ranked_dictionaries)
         msg = "matches embedded repeat patterns"
         check_matches(msg, matches, 'repeat', [pattern], [[i, j]],
                       {'base_token': ['&']})
@@ -409,20 +414,20 @@ def test_repeat_matching():
     for length in [3, 12]:
         for chr in ['a', 'Z', '4', '&']:
             pattern = chr * (length + 1)
-            matches = matching.repeat_match(pattern)
+            matches = matching.repeat_match(pattern, _ranked_dictionaries)
             msg = "matches repeats with base character '%s'" % chr
             check_matches(msg, matches, 'repeat', [pattern],
                           [[0, len(pattern) - 1]],
                           {'base_token': [chr]})
 
-    matches = matching.repeat_match('BBB1111aaaaa@@@@@@')
+    matches = matching.repeat_match('BBB1111aaaaa@@@@@@', _ranked_dictionaries)
     patterns = ['BBB', '1111', 'aaaaa', '@@@@@@']
     msg = 'matches multiple adjacent repeats'
     check_matches(msg, matches, 'repeat', patterns,
                   [[0, 2], [3, 6], [7, 11], [12, 17]],
                   {'base_token': ['B', '1', 'a', '@']})
 
-    matches = matching.repeat_match('2818BBBbzsdf1111@*&@!aaaaaEUDA@@@@@@1729')
+    matches = matching.repeat_match('2818BBBbzsdf1111@*&@!aaaaaEUDA@@@@@@1729', _ranked_dictionaries)
     msg = 'matches multiple repeats with non-repeats in-between'
     check_matches(msg, matches, 'repeat', patterns,
                   [[4, 6], [12, 15], [21, 25], [30, 35]],
@@ -430,19 +435,19 @@ def test_repeat_matching():
 
     # test multi-character repeats
     pattern = 'abab'
-    matches = matching.repeat_match(pattern)
+    matches = matching.repeat_match(pattern, _ranked_dictionaries)
     msg = 'matches multi-character repeat pattern'
     check_matches(msg, matches, 'repeat', [pattern], [[0, len(pattern) - 1]],
                   {'base_token': ['ab']})
 
     pattern = 'aabaab'
-    matches = matching.repeat_match(pattern)
+    matches = matching.repeat_match(pattern, _ranked_dictionaries)
     msg = 'matches aabaab as a repeat instead of the aa prefix'
     check_matches(msg, matches, 'repeat', [pattern], [[0, len(pattern) - 1]],
                   {'base_token': ['aab']})
 
     pattern = 'abababab'
-    matches = matching.repeat_match(pattern)
+    matches = matching.repeat_match(pattern, _ranked_dictionaries)
     msg = 'identifies ab as repeat string, even though abab is also repeated'
     check_matches(msg, matches, 'repeat', [pattern], [[0, len(pattern) - 1]],
                   {'base_token': ['ab']})
@@ -465,7 +470,7 @@ def test_regex_matching():
 def test_date_matching():
     for sep in ['', ' ', '-', '/', '\\', '_', '.']:
         password = "13%s2%s1921" % (sep, sep)
-        matches = matching.date_match(password)
+        matches = matching.date_match(password, _ranked_dictionaries)
         msg = "matches dates that use '%s' as a separator" % sep
         check_matches(msg, matches, 'date', [password],
                       [[0, len(password) - 1]],
@@ -479,7 +484,7 @@ def test_date_matching():
     for order in ['mdy', 'dmy', 'ymd', 'ydm']:
         d, m, y = 8, 8, 88
         password = order.replace('y', str(y)).replace('m', str(m)).replace('d', str(d))
-        matches = matching.date_match(password)
+        matches = matching.date_match(password, _ranked_dictionaries)
         msg = "matches dates with '%s' format" % order
         check_matches(msg, matches, 'date', [password],
                       [[0, len(password) - 1]],
@@ -491,7 +496,7 @@ def test_date_matching():
                       })
 
     password = '111504'
-    matches = matching.date_match(password)
+    matches = matching.date_match(password, _ranked_dictionaries)
     msg = "matches the date with year closest to REFERENCE_YEAR when ambiguous"
     check_matches(msg, matches, 'date', [password], [[0, len(password) - 1]],
                   {
@@ -508,7 +513,7 @@ def test_date_matching():
         [22, 11, 1551],
     ]:
         password = "%s%s%s" % (year, month, day)
-        matches = matching.date_match(password)
+        matches = matching.date_match(password, _ranked_dictionaries)
         msg = "matches %s" % password
         check_matches(msg, matches, 'date', [password],
                       [[0, len(password) - 1]],
@@ -517,7 +522,7 @@ def test_date_matching():
                           'year': [year],
                       })
         password = "%s.%s.%s" % (year, month, day)
-        matches = matching.date_match(password)
+        matches = matching.date_match(password, _ranked_dictionaries)
         msg = "matches %s" % password
         check_matches(msg, matches, 'date', [password],
                       [[0, len(password) - 1]],
@@ -527,7 +532,7 @@ def test_date_matching():
                       })
 
     password = "02/02/02"
-    matches = matching.date_match(password)
+    matches = matching.date_match(password, _ranked_dictionaries)
     msg = "matches zero-padded dates"
     check_matches(msg, matches, 'date', [password], [[0, len(password) - 1]],
                   {
@@ -541,7 +546,7 @@ def test_date_matching():
     suffixes = ['!']
     pattern = '1/1/91'
     for password, i, j in genpws(pattern, prefixes, suffixes):
-        matches = matching.date_match(password)
+        matches = matching.date_match(password, _ranked_dictionaries)
         msg = "matches embedded dates"
         check_matches(msg, matches, 'date', [pattern], [[i, j]],
                       {
@@ -550,7 +555,7 @@ def test_date_matching():
                           'day': [1],
                       })
 
-    matches = matching.date_match('12/20/1991.12.20')
+    matches = matching.date_match('12/20/1991.12.20', _ranked_dictionaries)
     msg = "matches overlapping dates"
     check_matches(msg, matches, 'date', ['12/20/1991', '1991.12.20'],
                   [[0, 9], [6, 15]],
@@ -561,7 +566,7 @@ def test_date_matching():
                       'day': [20, 20],
                   })
 
-    matches = matching.date_match('912/20/919')
+    matches = matching.date_match('912/20/919', _ranked_dictionaries)
     msg = "matches dates padded by non-ambiguous digits"
     check_matches(msg, matches, 'date', ['12/20/91'], [[1, 8]],
                   {
@@ -575,7 +580,7 @@ def test_date_matching():
 def test_omnimatch():
     assert matching.omnimatch('') == [], "doesn't match ''"
     password = 'r0sebudmaelstrom11/20/91aaaa'
-    matches = matching.omnimatch(password)
+    matches = matching.omnimatch(password, _ranked_dictionaries)
     for [pattern_name, [i, j]] in [
         ['dictionary', [0, 6]],
         ['dictionary', [7, 15]],
