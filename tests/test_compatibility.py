@@ -42,14 +42,13 @@ def main(argv):
     number_of_passwords = len(d)
     scores_collision = 0
     guesses_collision = 0
-    refresh_rate = number_of_passwords/100
+    refresh_rate = number_of_passwords // 100
 
     i = 0
     for js_zxcvbn_score in d:
         if i%refresh_rate== 0:
             update_console_status(i*100/number_of_passwords)
         i += 1
-
         py_zxcvbn_scroe = dict()
         py_zxcvbn_scroe_full = zxcvbn(js_zxcvbn_score['password'])
         py_zxcvbn_scroe["password"] = py_zxcvbn_scroe_full["password"]
@@ -64,7 +63,7 @@ def main(argv):
 expected:
 %s
 results:
-%s\033[00m""")%(js_zxcvbn_score, py_zxcvbn_scroe)
+%s\033[00m""" % (js_zxcvbn_score, py_zxcvbn_scroe))
 
         if py_zxcvbn_scroe["score"] != js_zxcvbn_score["score"]:
             scores_collision += 1
@@ -72,7 +71,7 @@ results:
     if (guesses_collision or scores_collision):
         print ("""\033[91mFailed!
 guesses_collision:%d
-guesses_score:%d""")%(guesses_collision, scores_collision)
+guesses_score:%d""" % (guesses_collision, scores_collision))
     else:
         print ("\033[92mPassed!")
 

@@ -67,18 +67,6 @@ def test_build_ranked_dict():
     }
 
 
-def test_add_frequency_lists():
-    matching.add_frequency_lists({
-        'test_words': ['qidkviflkdoejjfkd', 'sjdshfidssdkdjdhfkl']
-    })
-
-    assert 'test_words' in matching.RANKED_DICTIONARIES
-    assert matching.RANKED_DICTIONARIES['test_words'] == {
-        'qidkviflkdoejjfkd': 1,
-        'sjdshfidssdkdjdhfkl': 2,
-    }
-
-
 def test_matching_utils():
     chr_map = {
         'a': 'A',
@@ -102,7 +90,7 @@ def test_matching_utils():
 
 def test_dictionary_matching():
     def dm(pw):
-        return matching.dictionary_match(pw, test_dicts)
+        return matching.dictionary_match(pw, _ranked_dictionaries=test_dicts)
 
     test_dicts = {
         'd1': {
@@ -196,7 +184,7 @@ def test_reverse_dictionary_matching():
         }
     }
     password = '0123456789'
-    matches = matching.reverse_dictionary_match(password, test_dicts)
+    matches = matching.reverse_dictionary_match(password, _ranked_dictionaries=test_dicts)
     msg = 'matches against reversed words'
     check_matches(msg, matches, 'dictionary', ['123', '456'], [[1, 3], [4, 6]],
                   {
@@ -236,7 +224,7 @@ def test_l33t_matching():
         assert matching.enumerate_l33t_subs(table) == subs, msg
 
     def lm(pw):
-        return matching.l33t_match(pw, dicts, test_table)
+        return matching.l33t_match(pw, _ranked_dictionaries=dicts, _l33t_table=test_table)
 
     dicts = {
         'words': {
