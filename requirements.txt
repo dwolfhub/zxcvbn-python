@@ -1,1 +1,5 @@
-pytest==3.5.0
+# For older Python versions < 3.6 install Pytest 3.5.0
+pytest==3.5.0; python_version < "3.6"
+
+# For Python 3.6+, install a more modern Pytest:
+pytest==7.4.2; python_version >= "3.6"

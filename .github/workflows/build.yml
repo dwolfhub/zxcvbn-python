@@ -7,27 +7,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, 3.9]
+        python-version:
+          ["3.8.*", "3.9.*", "3.10.*", "3.11.*", "3.12.*", "3.13.*"]
     steps:
-    - uses: actions/checkout@master
-    - name: set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -U setuptools
-        pip install -r requirements.txt
-        pip install .
-    - name: Run mypy
-      if: "matrix.python-version != '2.7' && matrix.python-version != 'pypy2'"
-      run: |
+      - uses: actions/checkout@master
+      - name: set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U setuptools
+          pip install -r requirements.txt
+          pip install .
+          pip install tox
+      - name: Run mypy
+        run: |
           pip install -U mypy
           mypy -p zxcvbn --ignore-missing-imports
-    - name: Run tests
-      run: |
-          pytest -v 
-    - name: Test Compatibility
-      run: |
-          python tests/test_compatibility.py tests/password_expected_value.json
+      - name: Run tests
+        run: |
+          tox
