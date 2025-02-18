@@ -103,18 +103,18 @@ Output:
         }],
     }
 
-To override the default maximum password length of 72 characters, set the
-``ZXCVBN_MAX_LENGTH`` environment variable:
+Another optional argument is ``max_length``, allowing override of the default max password length of 72.
+.. code:: python
 
-.. code-block:: bash
+    from zxcvbn import zxcvbn
 
-   export ZXCVBN_MAX_LENGTH=128
+    results = zxcvbn('JohnSmith321', user_inputs=['John', 'Smith'], max_length=88)
 
 .. warning::
-   We strongly advise against setting ``ZXCVBN_MAX_LENGTH`` to a value greater than 72,
+
+   We strongly advise against setting ``max_length`` greater than 72,
    as it can lead to long processing times and may leave server-side applications open
    to denial-of-service scenarios.
-
 
 Custom Ranked Dictionaries
 --------------------------
@@ -141,10 +141,12 @@ You an also use zxcvbn from the command line::
 
     echo 'password' | zxcvbn --user-input <user-input> | jq
 
+You can include a ``--max-length`` argument::
+    echo '<long password>' | zxcvbn --max-length 142
+
 You can also execute the zxcvbn module::
 
     echo 'password' | python -m zxcvbn --user-input <user-input> | jq
-
 
 Contribute
 ----------

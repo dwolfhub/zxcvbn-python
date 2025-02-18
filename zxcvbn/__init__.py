@@ -3,13 +3,11 @@ from datetime import datetime
 
 from . import matching, scoring, time_estimates, feedback
 
-DEFAULT_MAX_LENGTH = 72
-MAX_LENGTH = int(os.environ.get('ZXCVBN_MAX_LENGTH', DEFAULT_MAX_LENGTH))
 
-def zxcvbn(password, user_inputs=None):
+def zxcvbn(password, user_inputs=None, max_length=72):
     # Throw error if password exceeds max length
-    if len(password) > MAX_LENGTH:
-        raise ValueError(f"Password length exceeds {MAX_LENGTH} characters.")
+    if len(password) > max_length:
+        raise ValueError(f"Password exceeds max length of {max_length} characters.")
 
     try:
         # Python 2 string types
