@@ -1,8 +1,14 @@
+import os
 from datetime import datetime
 
 from . import matching, scoring, time_estimates, feedback
 
-def zxcvbn(password, user_inputs=None):
+
+def zxcvbn(password, user_inputs=None, max_length=72):
+    # Throw error if password exceeds max length
+    if len(password) > max_length:
+        raise ValueError(f"Password exceeds max length of {max_length} characters.")
+
     try:
         # Python 2 string types
         basestring = (str, unicode)

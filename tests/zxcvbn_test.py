@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 from zxcvbn import zxcvbn
 
 
@@ -23,7 +24,7 @@ def test_long_password():
     input_ = None
     password = "weopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioejiojweopiopdsjmkldjvoisdjfioej"
 
-    zxcvbn(password, user_inputs=[input_])
+    zxcvbn(password, user_inputs=[input_], max_length=316)
 
 
 def test_dictionary_password():
