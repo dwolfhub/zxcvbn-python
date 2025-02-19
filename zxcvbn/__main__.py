@@ -16,6 +16,12 @@ parser.add_argument(
     help='user data to be added to the dictionaries that are tested against '
          '(name, birthdate, etc)',
 )
+parser.add_argument(
+    '--max-length',
+    default=72,
+    type=int,
+    help='Override password max length (default: 72)'
+)
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -36,7 +42,7 @@ def cli():
     else:
         password = getpass.getpass()
 
-    res = zxcvbn(password, user_inputs=args.user_input)
+    res = zxcvbn(password, user_inputs=args.user_input, max_length=args.max_length)
     json.dump(res, sys.stdout, indent=2, cls=JSONEncoder)
     sys.stdout.write('\n')
 
