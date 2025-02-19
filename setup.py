@@ -5,10 +5,10 @@ with open('README.rst') as file:
 
 setup(
     name='zxcvbn',
-    version='4.4.28',
+    version='4.5.0',
     packages=['zxcvbn'],
     url='https://github.com/dwolfhub/zxcvbn-python',
-    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.4.28',
+    download_url='https://github.com/dwolfhub/zxcvbn-python/tarball/v4.5.0',
     license='MIT',
     author='Daniel Wolf',
     author_email='danielrwolf5@gmail.com',
@@ -19,17 +19,18 @@ setup(
             'zxcvbn = zxcvbn.__main__:cli'
          ]
     },
+    project_urls = {
+      'Changelog': 'https://github.com/dwolfhub/zxcvbn-python/blob/master/CHANGELOG.md'
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Security',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ]
