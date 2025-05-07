@@ -46,3 +46,13 @@ def test_empty_password():
       zxcvbn(password, user_inputs=[input_])
     except IndexError as ie:
         assert False, "Empty password raised IndexError"
+
+
+def test_user_inputs_side_effects():
+    password = '7r3iz3|)0uz3'
+    input_ = [password]
+
+    guess1 = zxcvbn(password)['guesses_log10']
+    zxcvbn('somepassword', user_inputs=input_)
+    guess2 = zxcvbn(password)['guesses_log10']
+    assert abs(guess1 - guess2) < 1
