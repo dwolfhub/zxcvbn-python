@@ -2,6 +2,7 @@ from zxcvbn import scoring
 from . import adjacency_graphs
 import re
 import functools
+import copy
 
 from zxcvbn.scoring import most_guessable_match_sequence
 
@@ -98,10 +99,9 @@ DATE_SPLITS = {
 # omnimatch -- perform all matches
 @ensure_ranked_dictionaries
 def omnimatch(password, _ranked_dictionaries=None, user_inputs=[]):
-    if len(user_inputs):
+    if _ranked_dictionaries is not None and user_inputs:
+        _ranked_dictionaries = copy.copy(_ranked_dictionaries)
         _ranked_dictionaries['user_inputs'] = build_ranked_dict(user_inputs)
-    elif 'user_inputs' in _ranked_dictionaries:
-        del(_ranked_dictionaries['user_inputs'])
 
     matches = []
     for matcher in [
