@@ -40,6 +40,13 @@ def ensure_ranked_dictionaries(func):
         return func(*args, **kwargs)
     return wrapper
 
+
+@ensure_ranked_dictionaries
+def add_frequency_lists(frequency_lists_, *, _ranked_dictionaries):
+    for name, lst in frequency_lists_.items():
+        _ranked_dictionaries[name] = build_ranked_dict(lst)
+
+
 GRAPHS = {
     'qwerty': adjacency_graphs.ADJACENCY_GRAPHS['qwerty'],
     'dvorak': adjacency_graphs.ADJACENCY_GRAPHS['dvorak'],
