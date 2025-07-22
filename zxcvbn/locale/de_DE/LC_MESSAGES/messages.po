@@ -1,0 +1,127 @@
+# German (Germany) translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <5h4d0wb0y@protonmail.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: 5h4d0wb0y@protonmail.com\n"
+"POT-Creation-Date: 2025-06-30 11:42+0800\n"
+"PO-Revision-Date: 2025-07-22 12:09+0200\n"
+"Last-Translator: FULL NAME <5h4d0wb0y@protonmail.com>\n"
+"Language: de_DE\n"
+"Language-Team: de_DE <5h4d0wb0y@protonmail.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: zxcvbn/feedback.py:10
+msgid "Use a few words, avoid common phrases."
+msgstr "Verwende ein paar Wörter, vermeide gängige Redewendungen."
+
+#: zxcvbn/feedback.py:11
+msgid "No need for symbols, digits, or uppercase letters."
+msgstr "Keine Notwendigkeit für Symbole, Ziffern oder Großbuchstaben."
+
+#: zxcvbn/feedback.py:27
+msgid "Add another word or two. Uncommon words are better."
+msgstr "Füge ein oder zwei weitere Wörter hinzu. Ungewöhnliche Wörter sind besser."
+
+#: zxcvbn/feedback.py:46
+msgid "Straight rows of keys are easy to guess."
+msgstr "Gerade Tastenreihen sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:48
+msgid "Short keyboard patterns are easy to guess."
+msgstr "Kurze Tastaturmuster sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:53
+msgid "Use a longer keyboard pattern with more turns."
+msgstr "Verwende ein längeres Tastaturmuster mit mehr Richtungswechseln."
+
+#: zxcvbn/feedback.py:58
+msgid "Repeats like \"aaa\" are easy to guess."
+msgstr "Wiederholungen wie \"aaa\" sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:60
+msgid "Repeats like \"abcabcabc\" are only slightly harder to guess than \"abc\"."
+msgstr "Wiederholungen wie \"abcabcabc\" sind nur etwas schwerer zu erraten als \"abc\"."
+
+#: zxcvbn/feedback.py:65
+msgid "Avoid repeated words and characters."
+msgstr "Vermeide wiederholte Wörter und Zeichen."
+
+#: zxcvbn/feedback.py:70
+msgid "Sequences like \"abc\" or \"6543\" are easy to guess."
+msgstr "Sequenzen wie \"abc\" oder \"6543\" sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:72
+msgid "Avoid sequences."
+msgstr "Vermeide Sequenzen."
+
+#: zxcvbn/feedback.py:78
+msgid "Recent years are easy to guess."
+msgstr "Aktuelle Jahreszahlen sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:80
+msgid "Avoid recent years."
+msgstr "Vermeide aktuelle Jahreszahlen."
+
+#: zxcvbn/feedback.py:81
+msgid "Avoid years that are associated with you."
+msgstr "Vermeide Jahreszahlen, die mit dir in Verbindung stehen."
+
+#: zxcvbn/feedback.py:86
+msgid "Dates are often easy to guess."
+msgstr "Daten sind oft leicht zu erraten."
+
+#: zxcvbn/feedback.py:88
+msgid "Avoid dates and years that are associated with you."
+msgstr "Vermeide Daten und Jahreszahlen, die mit dir in Verbindung stehen."
+
+#: zxcvbn/feedback.py:99
+msgid "This is a top-10 common password."
+msgstr "Dies ist eines der 10 häufigsten Passwörter."
+
+#: zxcvbn/feedback.py:101
+msgid "This is a top-100 common password."
+msgstr "Dies ist eines der 100 häufigsten Passwörter."
+
+#: zxcvbn/feedback.py:103
+msgid "This is a very common password."
+msgstr "Dies ist ein sehr häufiges Passwort."
+
+#: zxcvbn/feedback.py:105
+msgid "This is similar to a commonly used password."
+msgstr "Dies ähnelt einem häufig verwendeten Passwort."
+
+#: zxcvbn/feedback.py:108
+msgid "A word by itself is easy to guess."
+msgstr "Ein einzelnes Wort ist leicht zu erraten."
+
+#: zxcvbn/feedback.py:112
+msgid "Names and surnames by themselves are easy to guess."
+msgstr "Vor- und Nachnamen allein sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:114
+msgid "Common names and surnames are easy to guess."
+msgstr "Häufige Vor- und Nachnamen sind leicht zu erraten."
+
+#: zxcvbn/feedback.py:121
+msgid "Capitalization doesn't help very much."
+msgstr "Großschreibung hilft nicht viel."
+
+#: zxcvbn/feedback.py:123
+msgid "All-uppercase is almost as easy to guess as all-lowercase."
+msgstr "Nur Großbuchstaben sind fast so leicht zu erraten wie nur Kleinbuchstaben."
+
+#: zxcvbn/feedback.py:127
+msgid "Reversed words aren't much harder to guess."
+msgstr "Umgedrehte Wörter sind nicht viel schwerer zu erraten."
+
+#: zxcvbn/feedback.py:129
+msgid "Predictable substitutions like '@' instead of 'a' don't help very much."
+msgstr "Vorhersehbare Ersetzungen wie '@' statt 'a' helfen nicht viel."

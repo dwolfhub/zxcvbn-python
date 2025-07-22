@@ -22,6 +22,12 @@ parser.add_argument(
     type=int,
     help='Override password max length (default: 72)'
 )
+parser.add_argument(
+    '--lang',
+    default='en',
+    type=str,
+    help='Override language for feedback messages (default: en)'
+)
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -42,7 +48,7 @@ def cli():
     else:
         password = getpass.getpass()
 
-    res = zxcvbn(password, user_inputs=args.user_input, max_length=args.max_length)
+    res = zxcvbn(password, user_inputs=args.user_input, max_length=args.max_length, lang=args.lang)
     json.dump(res, sys.stdout, indent=2, cls=JSONEncoder)
     sys.stdout.write('\n')
 

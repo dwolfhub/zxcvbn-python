@@ -7,3 +7,5 @@ dist
 build
 zxcvbn*.egg-info
 .vscode
+*.mo
+.tox

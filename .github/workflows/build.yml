@@ -20,8 +20,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U setuptools
           pip install -r requirements.txt
+          pybabel compile -d zxcvbn/locale 
           pip install .
           pip install tox
+          pybabel compile -d zxcvbn/locale 
       - name: Run mypy
         run: |
           pip install -U mypy
