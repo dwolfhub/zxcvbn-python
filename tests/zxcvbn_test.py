@@ -46,3 +46,26 @@ def test_empty_password():
       zxcvbn(password, user_inputs=[input_])
     except IndexError as ie:
         assert False, "Empty password raised IndexError"
+
+def test_chinese_language_support():
+    # test Chinese translation
+    password = "musculature"
+    result = zxcvbn(password, lang='zh')
+    
+    assert result["feedback"]["warning"] == \
+           "单个词语容易被猜中。", \
+           "Returns Chinese translation for single-word passwords"
+
+    # test fallback to English if translation not found
+    result = zxcvbn(password, lang='fr')  # French not installed
+    
+    assert result["feedback"]["warning"] == \
+           "A word by itself is easy to guess.", \
+           "Falls back to English for unsupported languages"
+
+    # test English if translation not found
+    result = zxcvbn(password)  # French not installed
+    
+    assert result["feedback"]["warning"] == \
+           "A word by itself is easy to guess.", \
+           "Falls back to English for unsupported languages"

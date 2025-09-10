@@ -1,0 +1,127 @@
+# Chinese (Simplified, China) translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <liukan@126.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: liukan@126.com\n"
+"POT-Creation-Date: 2025-06-30 11:42+0800\n"
+"PO-Revision-Date: 2025-06-30 15:27+0800\n"
+"Last-Translator: FULL NAME <liukan@126.com>\n"
+"Language: zh_Hans_CN\n"
+"Language-Team: zh_Hans_CN <liukan@126.com>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: zxcvbn/feedback.py:10
+msgid "Use a few words, avoid common phrases."
+msgstr "请使用多个词语，避免常见短语。"
+
+#: zxcvbn/feedback.py:11
+msgid "No need for symbols, digits, or uppercase letters."
+msgstr "不需要符号、数字或大写字母。"
+
+#: zxcvbn/feedback.py:27
+msgid "Add another word or two. Uncommon words are better."
+msgstr "建议再添加一两个词，不常见的词更好。"
+
+#: zxcvbn/feedback.py:46
+msgid "Straight rows of keys are easy to guess."
+msgstr "键盘上的直线按键排列容易被猜中。"
+
+#: zxcvbn/feedback.py:48
+msgid "Short keyboard patterns are easy to guess."
+msgstr "短的键盘模式容易被猜中。"
+
+#: zxcvbn/feedback.py:53
+msgid "Use a longer keyboard pattern with more turns."
+msgstr "请使用更长且转折更多的键盘模式。"
+
+#: zxcvbn/feedback.py:58
+msgid "Repeats like \"aaa\" are easy to guess."
+msgstr "像\"aaa\"这样的重复模式容易被猜中。"
+
+#: zxcvbn/feedback.py:60
+msgid "Repeats like \"abcabcabc\" are only slightly harder to guess than \"abc\"."
+msgstr "像\"abcabcabc\"这样的重复模式只比\"abc\"难猜一点。"
+
+#: zxcvbn/feedback.py:65
+msgid "Avoid repeated words and characters."
+msgstr "避免重复的单词和字符。"
+
+#: zxcvbn/feedback.py:70
+msgid "Sequences like \"abc\" or \"6543\" are easy to guess."
+msgstr "像\"abc\"或\"6543\"这样的连续序列容易被猜中。"
+
+#: zxcvbn/feedback.py:72
+msgid "Avoid sequences."
+msgstr "避免使用连续序列。"
+
+#: zxcvbn/feedback.py:78
+msgid "Recent years are easy to guess."
+msgstr "近年来份容易被猜中。"
+
+#: zxcvbn/feedback.py:80
+msgid "Avoid recent years."
+msgstr "避免使用近年份。"
+
+#: zxcvbn/feedback.py:81
+msgid "Avoid years that are associated with you."
+msgstr "避免使用与自己相关的年份。"
+
+#: zxcvbn/feedback.py:86
+msgid "Dates are often easy to guess."
+msgstr "日期常常容易被猜中。"
+
+#: zxcvbn/feedback.py:88
+msgid "Avoid dates and years that are associated with you."
+msgstr "避免使用与自己相关的日期和年份。"
+
+#: zxcvbn/feedback.py:99
+msgid "This is a top-10 common password."
+msgstr "这是排名前10的常用密码。"
+
+#: zxcvbn/feedback.py:101
+msgid "This is a top-100 common password."
+msgstr "这是排名前100的常用密码。"
+
+#: zxcvbn/feedback.py:103
+msgid "This is a very common password."
+msgstr "这是一个非常常见的密码。"
+
+#: zxcvbn/feedback.py:105
+msgid "This is similar to a commonly used password."
+msgstr "这与常用密码相似。"
+
+#: zxcvbn/feedback.py:108
+msgid "A word by itself is easy to guess."
+msgstr "单个词语容易被猜中。"
+
+#: zxcvbn/feedback.py:112
+msgid "Names and surnames by themselves are easy to guess."
+msgstr "单独的姓名容易被猜中。"
+
+#: zxcvbn/feedback.py:114
+msgid "Common names and surnames are easy to guess."
+msgstr "常见姓名容易被猜中。"
+
+#: zxcvbn/feedback.py:121
+msgid "Capitalization doesn't help very much."
+msgstr "大小写帮助不大。"
+
+#: zxcvbn/feedback.py:123
+msgid "All-uppercase is almost as easy to guess as all-lowercase."
+msgstr "全大写几乎和全小写一样容易被猜中。"
+
+#: zxcvbn/feedback.py:127
+msgid "Reversed words aren't much harder to guess."
+msgstr "反转的单词也没有更难猜。"
+
+#: zxcvbn/feedback.py:129
+msgid "Predictable substitutions like '@' instead of 'a' don't help very much."
+msgstr "像用'@'代替'a'这种可预测的替换帮助不大。"

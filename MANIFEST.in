@@ -1,1 +1,4 @@
 include LICENSE.txt
+recursive-include zxcvbn/locale *.mo
+recursive-include zxcvbn/locale *.po
+recursive-include zxcvbn/locale *.pot

@@ -1,5 +1,26 @@
 from zxcvbn.scoring import START_UPPER, ALL_UPPER
-from gettext import gettext as _
+from gettext import gettext as gettext_
+from typing import Callable, Optional
+
+# Store reference to translation function for fallback handling
+def _(s: str) -> str:
+    """Translation function wrapper that falls back to identity if no translation available.
+    
+    Args:
+        s: The string to translate
+        
+    Returns:
+        Translated string or original string if translation not available
+    """
+    try:
+        # Try to use gettext translation
+        trans = globals().get('_', gettext_)
+        return trans(s)
+    except:
+        return s
+
+# Store reference to translation function for fallback handling
+_ = lambda s: s if not hasattr(_.__globals__, '_') else _.__globals__['_'](s)
 
 
 def get_feedback(score, sequence):

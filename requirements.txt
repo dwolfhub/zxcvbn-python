@@ -3,3 +3,4 @@ pytest==3.5.0; python_version < "3.6"
 
 # For Python 3.6+, install a more modern Pytest:
 pytest==7.4.2; python_version >= "3.6"
+babel>=2.17.0
