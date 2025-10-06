@@ -1,3 +1,11 @@
+## v4.5.1 (2025-10-06)
+
+- Fix thread safety bug in lazy load pattern [View](https://github.com/musicsnobj/zxcvbn-python/commit/d32d30bed67352c9c28c9ae3be4fc889bee13cab)
+- use shallow copy for ranked dicts when user_inputs are present [View](https://github.com/musicsnobj/zxcvbn-python/commit/d46c84e7c2755acb7c4d910f8afba58b8bc93d2e)
+- Clear \_ranked_dictionaries['user_inputs'] when no user_inputs given [View](https://github.com/musicsnobj/zxcvbn-python/commit/590ec08a10f854e791465171b8c19d30dbe84b81)
+- add failing test on user_inputs side effects [View](https://github.com/musicsnobj/zxcvbn-python/commit/6fa2900c354bd0d797937c84e87f6ba15ae9543e)
+- add add_frequency_lists fn back [View](https://github.com/musicsnobj/zxcvbn-python/commit/72e8c8e2f4473b815788276c1962697c97ca3fdb)
+
 ## v4.5.0 (2025-02-19)
 
 - decorator solution for lazy loading frequency_lists library [View](https://github.com/dwolfhub/zxcvbn-python/commit/f4161482786f69c79acbe982dec6bcba84c9119d)
