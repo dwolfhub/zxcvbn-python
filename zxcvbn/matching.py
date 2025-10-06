@@ -108,6 +108,8 @@ def omnimatch(password, _ranked_dictionaries=None, user_inputs=[]):
     if _ranked_dictionaries is not None and user_inputs:
         _ranked_dictionaries = copy.copy(_ranked_dictionaries)
         _ranked_dictionaries['user_inputs'] = build_ranked_dict(user_inputs)
+    elif 'user_inputs' in _ranked_dictionaries:
+        del(_ranked_dictionaries['user_inputs'])
 
     matches = []
     for matcher in [
