@@ -516,7 +516,7 @@ def date_match(password, _ranked_dictionaries=None):
     # this uses a ^...$ regex against every substring of the password -- less performant but leads
     # to every possible date match.
     matches = []
-    maybe_date_no_separator = re.compile(r'^\d{4,8}$')
+    maybe_date_no_separator = re.compile(r'^\d{4,8}\Z')
     maybe_date_with_separator = re.compile(
         r'^(\d{1,4})([\s/\\_.-])(\d{1,2})\2(\d{1,4})$'
     )
