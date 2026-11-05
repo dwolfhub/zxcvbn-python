@@ -56,3 +56,9 @@ def test_user_inputs_side_effects():
     zxcvbn('somepassword', user_inputs=input_)
     guess2 = zxcvbn(password)['guesses_log10']
     assert abs(guess1 - guess2) < 1
+
+def test_digits_followed_by_newline():
+    # '$' also matches before a trailing newline; this used to raise
+    # ValueError from int('\n') in date_match
+    for password in ["12345\n", "123456\n", "1234567\n", "12345\nabc", "1234\n"]:
+        zxcvbn(password)
